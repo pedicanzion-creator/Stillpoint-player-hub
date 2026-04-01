@@ -1,7 +1,7 @@
 {
   "name": "NEXUS Character Sheet",
   "version": "2.0.0",
-  "author": "Rodent Royalty",
+  "author": "Roden Royalty",
   "description": "Full-featured NEXUS TTRPG character sheet with stat tracking, metaphysical type panels, inventory, and campaign data. Saves to your Owlbear player profile — works across sessions and devices.",
   "icon": "/nexus-obr-extension/icon.svg",
   "action": {
