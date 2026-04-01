@@ -9,13 +9,26 @@
       href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap"
       rel="stylesheet"
     />
-    <!-- OBR SDK — loaded async, gracefully degraded if unavailable -->
-    <script>
-      window.__OBR_READY = false;
-      window.__OBR_CALLBACKS = [];
-      function onOBRReady(cb) { if (window.__OBR_READY) cb(); else window.__OBR_CALLBACKS.push(cb); }
+    <!-- OBR SDK: loaded as ESM module — gracefully skipped if not in OBR context -->
+    <script type="module">
+      try {
+        const { default: OBR } = await import("https://esm.sh/@owlbear-rodeo/sdk@3.1.0");
+        window.OBR = OBR;
+        window.__OBR_READY = false;
+        window.__OBR_CALLBACKS = [];
+        initOBR();
+      } catch(e) {
+        // Not in OBR context or network unavailable — sheet works standalone via localStorage
+        console.info("NEXUS: OBR SDK not loaded, running in standalone mode");
+        window.__OBR_READY = false;
+        window.__OBR_CALLBACKS = [];
+      }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@latest/dist/index.umd.js" async onload="initOBR()"></script>
+    <script>
+      // Fallback stubs so initOBR() doesn't crash if module hasn't loaded yet
+      window.__OBR_READY = window.__OBR_READY || false;
+      window.__OBR_CALLBACKS = window.__OBR_CALLBACKS || [];
+    </script>
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       :root {
@@ -3653,9 +3666,10 @@
       let activeSlot = 0;
       let __obrAvailable = false;
 
-      /* ── OBR INIT ── called when SDK script loads */
+      /* ── OBR INIT ── called after ESM module loads */
       function initOBR() {
-        if (typeof OBR === 'undefined') return;
+        if (typeof window.OBR === 'undefined') return;
+        const OBR = window.OBR;
         OBR.onReady(async () => {
           __obrAvailable = true;
           window.__OBR_READY = true;
@@ -3677,20 +3691,26 @@
               /* Store into localStorage as cache */
               try {
                 Object.keys(savedSlots).forEach(k => {
-                  localStorage.setItem(STORAGE_KEY + k, typeof savedSlots[k] === 'string'
-                    ? savedSlots[k] : JSON.stringify(savedSlots[k]));
+                  /* skip non-slot metadata keys */
+                  if (k === 'last-active' || k === 'count') return;
+                  const val = savedSlots[k];
+                  if (!val || (typeof val === 'string' && val.trim() === '')) return;
+                  localStorage.setItem(STORAGE_KEY + k,
+                    typeof val === 'string' ? val : JSON.stringify(val));
                 });
               } catch(e) {}
               /* Auto-load last active slot */
               const lastSlot = parseInt(savedSlots['last-active'] || '0', 10);
-              const slotRaw = savedSlots[lastSlot];
-              if (slotRaw) {
-                const data = typeof slotRaw === 'string' ? JSON.parse(slotRaw) : slotRaw;
-                if (data && data.charname !== undefined) {
-                  activeSlot = lastSlot;
-                  deserializeSheet(data);
-                  refreshSlotLabels();
-                }
+              const slotRaw = savedSlots[String(lastSlot)]; /* keys are always strings */
+              if (slotRaw && slotRaw !== '') {
+                try {
+                  const data = typeof slotRaw === 'string' ? JSON.parse(slotRaw) : slotRaw;
+                  if (data && data.charname !== undefined) {
+                    activeSlot = lastSlot;
+                    deserializeSheet(data);
+                    refreshSlotLabels();
+                  }
+                } catch(parseErr) { console.warn('NEXUS: slot parse failed', parseErr); }
               }
             }
           } catch(e) { console.warn('NEXUS: OBR metadata load failed', e); }
@@ -3703,16 +3723,16 @@
 
       /* ── STORAGE ABSTRACTION ── OBR metadata preferred, localStorage fallback ── */
       async function _obrSaveAllSlots() {
-        if (!__obrAvailable) return;
+        if (!__obrAvailable || typeof window.OBR === 'undefined') return;
         try {
           const slotCount = getSlotCount();
           const payload = { 'last-active': String(activeSlot) };
           for (let i = 0; i < slotCount + 3; i++) {
             const raw = localStorage.getItem(STORAGE_KEY + i);
-            if (raw) payload[i] = raw;
+            if (raw && raw.trim() !== '') payload[String(i)] = raw; /* string keys */
           }
           payload['count'] = String(slotCount);
-          await OBR.player.setMetadata({ [OBR_META_KEY]: payload });
+          await window.OBR.player.setMetadata({ [OBR_META_KEY]: payload });
         } catch(e) { console.warn('NEXUS: OBR metadata save failed', e); }
       }
 
@@ -3929,8 +3949,11 @@
       }
 
       function getSlotData(n) {
-        try { const raw = localStorage.getItem(STORAGE_KEY + n); return raw ? JSON.parse(raw) : null; }
-        catch (e) { return null; }
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY + n);
+          if (!raw || raw.trim() === '') return null;
+          return JSON.parse(raw);
+        } catch (e) { return null; }
       }
 
       function refreshSlotLabels() {
@@ -4148,7 +4171,7 @@ function importJSON(fileInputOrFile) {
           if (__obrAvailable) return; /* OBR handled it */
           try {
             const lastSlot = parseInt(localStorage.getItem('nexus-last-active-slot') || '0', 10);
-            const data = getSlotData(lastSlot);
+            const data = getSlotData(lastSlot); /* already guards empty strings */
             if (data && data.charname !== undefined) {
               activeSlot = lastSlot;
               deserializeSheet(data);
