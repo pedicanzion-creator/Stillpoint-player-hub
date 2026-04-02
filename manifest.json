@@ -4,8 +4,8 @@
   "manifest_version": 1,
   "action": {
     "title": "NEXUS Sheet",
-    "icon": "/icon.svg",
-    "popover": "/index.html",
+    "popover": "/nexus-sheet/index.html",
+    "icon": "/nexus-sheet/icon.svg"
     "height": 700,
     "width": 920
   }
