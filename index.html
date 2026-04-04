@@ -3,32 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NEXUS Character Sheet</title>
-    <meta name="color-scheme" content="light dark" />
+    <title>NEXUS — Character Sheet (Multi-Type)</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap"
       rel="stylesheet"
     />
-    <!-- OBR SDK: loaded as ESM module — gracefully skipped if not in OBR context -->
-    <script type="module">
-      try {
-        const { default: OBR } = await import("https://esm.sh/@owlbear-rodeo/sdk@3.1.0");
-        window.OBR = OBR;
-        window.__OBR_READY = false;
-        window.__OBR_CALLBACKS = [];
-        initOBR();
-      } catch(e) {
-        // Not in OBR context or network unavailable — sheet works standalone via localStorage
-        console.info("NEXUS: OBR SDK not loaded, running in standalone mode");
-        window.__OBR_READY = false;
-        window.__OBR_CALLBACKS = [];
-      }
-    </script>
-    <script>
-      // Fallback stubs so initOBR() doesn't crash if module hasn't loaded yet
-      window.__OBR_READY = window.__OBR_READY || false;
-      window.__OBR_CALLBACKS = window.__OBR_CALLBACKS || [];
-    </script>
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       :root {
@@ -45,71 +24,6 @@
         --font-display: 'Rajdhani', sans-serif;
         --font-mono: 'Share Tech Mono', monospace;
         --font-body: 'Crimson Pro', serif;
-      }
-
-      /* ── OBR LIGHT THEME ── */
-      [data-obr-theme="light"] {
-        --bg: #f5f3ef;
-        --surface: #ffffff;
-        --surface2: #ede9e1;
-        --border: #c8c4bc;
-        --border-bright: #a8a49c;
-        --accent: #8a6a28;
-        --accent-dim: #c4a460;
-        --accent-glow: rgba(138,106,40,0.10);
-        --text: #1a1816;
-        --text-dim: #4a4640;
-        --text-muted: #8a8680;
-        --red: #b03020;
-        --red-dim: #f0d0c8;
-        --blue: #1a5fa4;
-        --blue-dim: #c8daf4;
-        --purple: #6a3ca4;
-        --purple-dim: #dac8f4;
-        --green: #2a6a3c;
-        --green-dim: #c8e4d0;
-        --orange: #a45820;
-        --teal: #1a8070;
-        --teal-dim: #c8ece8;
-      }
-
-      /* ── MOBILE IMPROVEMENTS ── */
-      @media (max-width: 768px) {
-        body { padding: 0.75rem 0.5rem 3rem; }
-        .sheet { max-width: 100%; }
-        .header { grid-template-columns: 1fr; gap: 0.5rem; }
-        .header-right { align-items: flex-start; text-align: left; }
-        .nexus-logo { font-size: 2.4rem; }
-        .grid-4 { grid-template-columns: repeat(2, 1fr); }
-        .grid-2 { grid-template-columns: 1fr; }
-        .type-selector { grid-template-columns: repeat(2, 1fr); }
-        .save-bar { flex-wrap: wrap; gap: 0.4rem; }
-        .sbar-btn { font-size: 0.6rem; padding: 0.35rem 0.65rem; }
-        .stat-tier-select { font-size: 0.8rem; }
-        .track-box { width: 20px; height: 20px; }
-        .minds-eye-row { flex-wrap: wrap; gap: 0.4rem; }
-        .eye-stage { min-width: 70px; flex: 1; }
-        .meta-panel { padding: 0.75rem; }
-        .weight-track { gap: 4px; }
-        .weight-pip { width: 18px; height: 18px; }
-        .slots-modal { padding: 0.75rem; }
-        .field-input { width: 100%; min-width: 0; }
-        .action-declare-row { grid-template-columns: 70px 1fr; }
-      }
-      @media (max-width: 480px) {
-        .grid-4 { grid-template-columns: repeat(2, 1fr); }
-        .save-bar-actions { flex-wrap: wrap; }
-        .tabs-row { flex-wrap: wrap; }
-        .tab-btn { font-size: 0.65rem; padding: 0.35rem 0.5rem; }
-        .type-btn { font-size: 0.75rem; padding: 0.5rem 0.2rem; }
-      }
-
-      /* Accessibility: ensure minimum touch target 44px on mobile */
-      @media (max-width: 768px) {
-        button, select, input[type="file"] + label { min-height: 44px; }
-        .type-btn, .sbar-btn, .add-btn, .backlash-roll-btn { min-height: 44px; }
-        .tab-btn { min-height: 40px; }
-        .track-box { min-width: 22px; min-height: 22px; }
       }
       body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; padding: 2rem 1.5rem 4rem; }
       .sheet { max-width: 960px; margin: 0 auto; }
@@ -285,6 +199,16 @@
       .boost-rank-label { font-family: var(--font-mono); font-size: 0.55rem; color: var(--text-muted); margin-top: 3px; }
       .stat-lock-note { font-family: var(--font-mono); font-size: 0.52rem; letter-spacing: 0.1em; color: var(--text-muted); text-align: center; margin-top: 4px; min-height: 0.8em; transition: color 0.2s; }
       .stat-lock-note.unlocked { color: var(--purple); }
+      /* ── CONSUMABLE USE BAR ── */
+      .con-use-bar { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem; padding: 0.45rem 0.6rem; background: var(--bg); border: 1px solid var(--green-dim); }
+      .con-uses-remaining { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; color: var(--green); min-width: 2.5rem; }
+      .con-uses-label { font-family: var(--font-mono); font-size: 0.52rem; letter-spacing: 0.1em; color: var(--text-muted); text-transform: uppercase; flex: 1; }
+      .con-use-btn { background: none; border: 1px solid var(--green); color: var(--green); font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.15em; padding: 0.3rem 0.75rem; cursor: pointer; text-transform: uppercase; transition: all 0.2s; white-space: nowrap; }
+      .con-use-btn:hover { background: rgba(74,138,92,0.15); }
+      .con-use-btn:disabled { border-color: var(--border); color: var(--text-muted); cursor: not-allowed; }
+      .con-renewable-sel { background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); font-family: var(--font-mono); font-size: 0.52rem; letter-spacing: 0.08em; padding: 2px 5px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; }
+      .con-renewable-sel:focus { border-color: var(--green); }
+
       /* ── INVENTORY EXPANDED ── */
       .inventory-item { background: var(--surface2); border: 1px solid var(--border); padding: 0; overflow: hidden; transition: border-color 0.2s; }
       .inventory-item:hover { border-color: var(--border-bright); }
@@ -385,11 +309,11 @@
       .slots-modal-add { width: 100%; background: none; border: 1px dashed var(--border); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.2em; padding: 0.5rem; cursor: pointer; text-transform: uppercase; transition: all 0.2s; margin-top: 0.25rem; }
       .slots-modal-add:hover { border-color: var(--accent-dim); color: var(--accent); }
       /* ── PORTRAIT ── */
-      .portrait-zone { width: 100px; height: 120px; border: 1px dashed var(--border-bright); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; overflow: hidden; flex-shrink: 0; position: relative; background: var(--surface2); }
+      .portrait-zone { width: 200px; height: 240px; border: 1px dashed var(--border-bright); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; overflow: hidden; flex-shrink: 0; position: relative; background: var(--surface2); }
       .portrait-zone:hover { border-color: var(--accent-dim); }
       .portrait-img { width: 100%; height: 100%; object-fit: cover; display: none; }
       .portrait-placeholder { display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
-      .portrait-icon { font-size: 1.4rem; color: var(--text-muted); }
+      .portrait-icon { font-size: 2.5rem; color: var(--text-muted); }
       .portrait-hint { font-family: var(--font-mono); font-size: 0.45rem; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase; text-align: center; }
       .portrait-input { display: none; }
       .save-bar { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); padding: 0.6rem 0; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
@@ -523,7 +447,31 @@
       .inline-select { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: var(--font-display); font-size: 0.85rem; font-weight: 500; padding: 5px 7px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; transition: border-color 0.2s; }
       .inline-select:focus { border-color: var(--accent); }
 
-      /* ── ACTION TYPE SYSTEM ── */
+      /* ── PASSIVE ABILITIES CAROUSEL ── */
+      .passive-carousel { position: relative; background: var(--surface2); border: 1px solid var(--border); overflow: hidden; }
+      .passive-carousel-track { display: flex; transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); }
+      .passive-carousel-slide { min-width: 100%; padding: 0.75rem 0.85rem; box-sizing: border-box; }
+      .passive-slide-stage { font-family: var(--font-mono); font-size: 0.52rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.5rem; }
+      .passive-slide-stage-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-bright); flex-shrink: 0; }
+      .passive-carousel-slide.slide-unlocked .passive-slide-stage { color: rgba(74,127,196,0.8); }
+      .passive-carousel-slide.slide-unlocked .passive-slide-stage-dot { background: var(--blue); }
+      .passive-carousel-slide.slide-locked { opacity: 0.45; }
+      .passive-ability-entry { margin-bottom: 0.55rem; }
+      .passive-ability-entry:last-child { margin-bottom: 0; }
+      .passive-ability-name { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.18rem; }
+      .passive-carousel-slide.slide-unlocked .passive-ability-name { color: var(--blue); }
+      .passive-ability-desc { font-family: var(--font-body); font-size: 0.82rem; color: var(--text-muted); line-height: 1.52; }
+      .passive-carousel-slide.slide-unlocked .passive-ability-desc { color: var(--text-dim); }
+      .passive-carousel-nav { display: flex; align-items: center; justify-content: space-between; padding: 0.3rem 0.5rem; border-top: 1px solid var(--border); background: var(--bg); }
+      .passive-nav-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.65rem; width: 24px; height: 24px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; line-height: 1; }
+      .passive-nav-btn:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+      .passive-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+      .passive-nav-pips { display: flex; gap: 4px; align-items: center; }
+      .passive-nav-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--border-bright); transition: all 0.2s; cursor: pointer; }
+      .passive-nav-pip.pip-active { background: var(--blue); width: 14px; border-radius: 3px; }
+      .passive-nav-pip.pip-locked { background: var(--border); opacity: 0.5; }
+
+
       .action-type-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin-bottom: 0.6rem; }
       .action-type-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.12em; padding: 0.45rem 0.3rem; cursor: pointer; text-transform: uppercase; transition: all 0.2s; text-align: center; }
       .action-type-btn:hover { border-color: var(--border-bright); color: var(--text); }
@@ -605,7 +553,6 @@
           <button class="sbar-btn btn-save" onclick="saveSheet()">Save</button>
           <button class="sbar-btn btn-clear" onclick="clearSlot()">Clear slot</button>
           <button class="sbar-btn btn-export" onclick="exportJSON()">Export JSON</button>
-          <button class="sbar-btn" onclick="showSupport()" style="border-color:var(--blue);color:var(--blue);" title="Help &amp; Support">?</button>
           <label class="sbar-btn" style="cursor:pointer;">Import JSON<input type="file" accept=".json" style="display:none;" onchange="importJSON(this.files[0])" /></label>
         </div>
       </div>
@@ -771,6 +718,7 @@
               <option value="legendary">Legendary</option>
             </select>
             <div class="stat-die" id="die-vigor">d6</div>
+            <button class="tp-stat-spend-btn" id="tp-spend-vigor" onclick="spendOnStat('vigor')" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--teal);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;padding:3px 4px;cursor:pointer;transition:border-color 0.2s;" title="Spend training points to raise vigor">Train ·  <span id="tp-cost-vigor">2 pts</span></button>
             <div class="stat-lock-note" id="lock-vigor"></div>
           </div>
           <div class="stat-card">
@@ -793,6 +741,7 @@
               <option value="legendary">Legendary</option>
             </select>
             <div class="stat-die" id="die-fortitude">d6</div>
+            <button class="tp-stat-spend-btn" id="tp-spend-fortitude" onclick="spendOnStat('fortitude')" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--teal);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;padding:3px 4px;cursor:pointer;transition:border-color 0.2s;" title="Spend training points to raise fortitude">Train ·  <span id="tp-cost-fortitude">2 pts</span></button>
             <div class="stat-lock-note" id="lock-fortitude"></div>
           </div>
           <div class="stat-card">
@@ -815,6 +764,7 @@
               <option value="legendary">Legendary</option>
             </select>
             <div class="stat-die" id="die-might">d6</div>
+            <button class="tp-stat-spend-btn" id="tp-spend-might" onclick="spendOnStat('might')" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--teal);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;padding:3px 4px;cursor:pointer;transition:border-color 0.2s;" title="Spend training points to raise might">Train ·  <span id="tp-cost-might">2 pts</span></button>
             <div class="stat-lock-note" id="lock-might"></div>
           </div>
           <div class="stat-card">
@@ -837,6 +787,7 @@
               <option value="legendary">Legendary</option>
             </select>
             <div class="stat-die" id="die-expertise">d6</div>
+            <button class="tp-stat-spend-btn" id="tp-spend-expertise" onclick="spendOnStat('expertise')" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--teal);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;padding:3px 4px;cursor:pointer;transition:border-color 0.2s;" title="Spend training points to raise expertise">Train ·  <span id="tp-cost-expertise">2 pts</span></button>
             <div class="stat-lock-note" id="lock-expertise"></div>
           </div>
           <div class="stat-card">
@@ -859,6 +810,7 @@
               <option value="legendary">Legendary</option>
             </select>
             <div class="stat-die" id="die-wit">d6</div>
+            <button class="tp-stat-spend-btn" id="tp-spend-wit" onclick="spendOnStat('wit')" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--teal);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;padding:3px 4px;cursor:pointer;transition:border-color 0.2s;" title="Spend training points to raise wit">Train ·  <span id="tp-cost-wit">2 pts</span></button>
             <div class="stat-lock-note" id="lock-wit"></div>
           </div>
           <div class="stat-card">
@@ -881,6 +833,7 @@
               <option value="legendary">Legendary</option>
             </select>
             <div class="stat-die" id="die-insight">d6</div>
+            <button class="tp-stat-spend-btn" id="tp-spend-insight" onclick="spendOnStat('insight')" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--teal);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;padding:3px 4px;cursor:pointer;transition:border-color 0.2s;" title="Spend training points to raise insight">Train ·  <span id="tp-cost-insight">2 pts</span></button>
             <div class="stat-lock-note" id="lock-insight"></div>
           </div>
           <div class="stat-card">
@@ -899,6 +852,7 @@
               <option value="master">Master</option>
             </select>
             <div class="stat-die" id="die-intuition">d6</div>
+            <button class="tp-stat-spend-btn" id="tp-spend-intuition" onclick="spendOnStat('intuition')" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--teal);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;padding:3px 4px;cursor:pointer;transition:border-color 0.2s;" title="Spend training points to raise intuition">Train ·  <span id="tp-cost-intuition">2 pts</span></button>
           </div>
           <div class="stat-card">
             <div class="stat-pillar">Sociability</div>
@@ -916,66 +870,27 @@
               <option value="master">Master</option>
             </select>
             <div class="stat-die" id="die-charm">d6</div>
+            <button class="tp-stat-spend-btn" id="tp-spend-charm" onclick="spendOnStat('charm')" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--teal);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;padding:3px 4px;cursor:pointer;transition:border-color 0.2s;" title="Spend training points to raise charm">Train ·  <span id="tp-cost-charm">2 pts</span></button>
           </div>
         </div>
 
-        <!-- Training Points -->
+        <!-- Training Points — Unified Pool -->
         <div class="training-panel">
-          <div class="section-label" style="margin-bottom:1rem;">
-            Training points
+          <div class="section-label" style="margin-bottom:1rem;">Training</div>
+          <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:0.15em;text-transform:uppercase;">Pool</span>
+              <span id="tp-pool-count" style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--teal);min-width:2.5rem;text-align:center;">0</span>
+              <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:0.1em;">pts</span>
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button class="train-btn" onclick="earnTraining(1)">Solo<span class="train-pts">+1</span></button>
+              <button class="train-btn" onclick="earnTraining(2)">Area<span class="train-pts">+2</span></button>
+              <button class="train-btn" onclick="earnTraining(4)">Master<span class="train-pts">+4</span></button>
+            </div>
           </div>
-          <div class="training-grid">
-            <div class="training-controls">
-              <div>
-                <div class="sub-label" style="margin-bottom:6px;">
-                  Train stat
-                </div>
-                <div class="training-row">
-                  <select
-                    class="training-stat-select"
-                    id="training-stat-select"
-                  >
-                    <option value="vigor">Vigor</option>
-                    <option value="fortitude">Fortitude</option>
-                    <option value="might">Might</option>
-                    <option value="expertise">Expertise</option>
-                    <option value="wit">Wit</option>
-                    <option value="insight">Insight</option>
-                    <option value="intuition">Intuition</option>
-                    <option value="charm">Charm</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <div class="sub-label" style="margin-bottom:6px;">
-                  Training type
-                </div>
-                <div class="training-btns">
-                  <button class="train-btn" onclick="doTrain(1)">
-                    Basic<span class="train-pts">+1 pt</span>
-                  </button>
-                  <button class="train-btn" onclick="doTrain(3)">
-                    Skilled<span class="train-pts">+3 pts</span>
-                  </button>
-                  <button class="train-btn" onclick="doTrain(6)">
-                    Masterful<span class="train-pts">+6 pts</span>
-                  </button>
-                </div>
-              </div>
-              <div
-                style="font-family:var(--font-mono);font-size:0.52rem;color:var(--text-muted);letter-spacing:0.1em;line-height:1.6;"
-              >
-                Points needed per rank: Deficient→Average: 3 · Average→Capable:
-                5 · Capable→Proficient: 8 · Proficient→Expert: 12 ·
-                Expert→Master: 18 · Master+: 25 each
-              </div>
-            </div>
-            <div>
-              <div class="sub-label" style="margin-bottom:8px;">
-                Point pools
-              </div>
-              <div class="tp-pool-display" id="tp-pool-display"></div>
-            </div>
+          <div style="font-family:var(--font-mono);font-size:0.52rem;color:var(--text-muted);letter-spacing:0.1em;line-height:1.8;">
+            Stats: 2pts/tier (Meta boosted: 4pts/tier) · Magic Weight: 4–20pts/rank · Mind's Eye: 4–16pts/stage · Abilities: 2pts (increases every 2) · New System: 6pts · New Restriction: 4pts
           </div>
         </div>
       </div>
@@ -1024,117 +939,26 @@
 
         <!-- Mage panel -->
         <div class="meta-panel" id="panel-mage">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-            <div>
-              <!-- Magic Weight -->
-              <div class="meta-panel-title">Magic weight</div>
-              <div class="weight-track" id="weight-pips"></div>
-              <div
-                style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);margin-top:4px;"
-                id="weight-label"
-              >
-                Weight: 0 / 10
-              </div>
-
-              <!-- Magic Weight Training -->
-              <div class="tab-training-panel">
-                <div class="tab-training-header">
-                  <span class="tab-training-title">Weight Training</span>
-                  <span
-                    class="tab-training-pts-display"
-                    id="mw-training-pts-display"
-                    style="color:var(--accent);"
-                    >0 pts</span
-                  >
-                </div>
-                <div class="tab-train-btns">
-                  <button
-                    class="tab-train-btn accent-train"
-                    onclick="addMwTraining(1)"
-                  >
-                    Basic<span class="tab-train-pts">+1 pt</span>
-                  </button>
-                  <button
-                    class="tab-train-btn accent-train"
-                    onclick="addMwTraining(3)"
-                  >
-                    Skilled<span class="tab-train-pts">+3 pts</span>
-                  </button>
-                  <button
-                    class="tab-train-btn accent-train"
-                    onclick="addMwTraining(6)"
-                  >
-                    Masterful<span class="tab-train-pts">+6 pts</span>
-                  </button>
-                </div>
-                <div class="tab-train-progress-row">
-                  <div class="tab-train-progress-bar">
-                    <div
-                      class="tab-train-progress-fill"
-                      id="mw-training-fill"
-                      style="background:var(--accent);width:0%;"
-                    ></div>
-                  </div>
-                  <span class="tab-train-status" id="mw-training-status"
-                    >—</span
-                  >
-                </div>
-                <div class="tab-train-spend-row">
-                  <button
-                    class="tab-train-spend-btn accent-spend"
-                    id="mw-training-add-btn"
-                    onclick="spendMwTraining()"
-                    disabled
-                  >
-                    Add weight pip
-                  </button>
-                  <span class="tab-train-cost-note"
-                    >5 pts per pip · 10 pips max</span
-                  >
-                </div>
-              </div>
-
-              <!-- Restrictions moved into each system card below -->
-              <div style="margin-top:0.75rem;font-family:var(--font-mono);font-size:0.5rem;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;">
-                Restrictions &amp; backlash are tracked per system below
-              </div>
-
-              <!-- Backlash panel -->
-              <div class="backlash-panel" id="backlash-panel">
-                <div class="backlash-header">
-                  <span class="backlash-title">Backlash die</span>
-                  <span class="backlash-die-display" id="backlash-die-display"
-                    >d10</span
-                  >
-                </div>
-                <div class="backlash-scale" id="backlash-scale">
-                  <div class="backlash-step" data-step="0">
-                    0 restr<br />d10
-                  </div>
-                  <div class="backlash-step" data-step="1">1 restr<br />d8</div>
-                  <div class="backlash-step" data-step="2">2 restr<br />d6</div>
-                  <div class="backlash-step" data-step="3">3 restr<br />d4</div>
-                  <div class="backlash-step" data-step="4">
-                    4+ restr<br />none
-                  </div>
-                </div>
-                <button
-                  class="backlash-roll-btn"
-                  id="backlash-roll-btn"
-                  onclick="rollBacklash()"
-                >
-                  Roll backlash
-                </button>
-                <div class="backlash-result" id="backlash-result"></div>
-              </div>
-
+          <!-- Magic Weight — centered -->
+          <div style="text-align:center;padding:1rem 0 0.5rem;">
+            <div class="meta-panel-title" style="margin-bottom:0.5rem;">Magic Weight</div>
+            <div class="weight-track" id="weight-pips" style="justify-content:center;"></div>
+            <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);margin-top:4px;" id="weight-label">
+              Weight: <span id="mw-rank-val">0</span> / 5
+            </div>
+            <!-- MW Spend -->
+            <div style="display:inline-flex;align-items:center;gap:0.75rem;margin-top:0.6rem;background:var(--bg);border:1px solid var(--border);padding:0.4rem 0.75rem;">
+              <span id="mw-next-cost" style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);">Cost: 4 pts</span>
+              <span id="mw-rank-display" style="font-family:var(--font-mono);font-size:0.65rem;color:var(--accent);">Rank 0 / 5</span>
+              <button class="tab-train-spend-btn accent-spend" id="mw-spend-btn" onclick="spendOnMagicWeight()">Raise rank</button>
             </div>
           </div>
+
           <!-- Systems section -->
           <div style="margin-top:1rem;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
-              <div class="meta-panel-title" style="margin-bottom:0;">Great Systems</div>
-              <button class="add-btn add-accent" style="width:auto;padding:0.25rem 0.75rem;font-size:0.58rem;" onclick="addMageSystem()">+ Add System</button>
+              <div class="meta-panel-title" style="margin-bottom:0;">Magic Systems</div>
+              <button class="add-btn add-accent" style="width:auto;padding:0.25rem 0.75rem;font-size:0.58rem;" onclick="openMageSystemDialog()">+ Add System</button>
             </div>
             <div id="mage-systems-list"></div>
           </div>
@@ -1145,7 +969,15 @@
           <div class="meta-panel-title">
             Mind's eye stage — determines psionic energy pool
           </div>
-          <div class="minds-eye-row" id="minds-eye-stages">
+          <div class="minds-eye-row" id="minds-eye-stages" style="grid-template-columns:repeat(5,1fr);">
+            <div
+              class="eye-stage"
+              data-stage="dormant"
+              onclick="setMindsEye('dormant')"
+            >
+              <div class="eye-stage-name">Dormant</div>
+              <div class="eye-stage-pool">Pool: 0</div>
+            </div>
             <div
               class="eye-stage"
               data-stage="close"
@@ -1180,59 +1012,15 @@
             </div>
           </div>
 
-          <!-- Mind's Eye Training -->
+          <!-- Mind's Eye Training Spend -->
           <div class="tab-training-panel">
             <div class="tab-training-header">
-              <span class="tab-training-title">Mind&apos;s Eye Training</span>
-              <span
-                class="tab-training-pts-display"
-                id="me-training-pts-display"
-                style="color:var(--blue);"
-                >0 pts</span
-              >
+              <span class="tab-training-title">Advance Mind&apos;s Eye</span>
+              <span id="me-stage-display" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--blue);">Dormant</span>
             </div>
-            <div class="tab-train-btns">
-              <button
-                class="tab-train-btn blue-train"
-                onclick="addMeTraining(1)"
-              >
-                Basic<span class="tab-train-pts">+1 pt</span>
-              </button>
-              <button
-                class="tab-train-btn blue-train"
-                onclick="addMeTraining(3)"
-              >
-                Skilled<span class="tab-train-pts">+3 pts</span>
-              </button>
-              <button
-                class="tab-train-btn blue-train"
-                onclick="addMeTraining(6)"
-              >
-                Masterful<span class="tab-train-pts">+6 pts</span>
-              </button>
-            </div>
-            <div class="tab-train-progress-row">
-              <div class="tab-train-progress-bar">
-                <div
-                  class="tab-train-progress-fill"
-                  id="me-training-fill"
-                  style="background:var(--blue);width:0%;"
-                ></div>
-              </div>
-              <span class="tab-train-status" id="me-training-status">—</span>
-            </div>
-            <div class="tab-train-spend-row">
-              <button
-                class="tab-train-spend-btn blue-spend"
-                id="me-training-advance-btn"
-                onclick="advanceMindsEye()"
-                disabled
-              >
-                Advance stage
-              </button>
-              <span class="tab-train-cost-note" id="me-training-cost-note"
-                >Select a stage above to set current level</span
-              >
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-top:0.5rem;">
+              <span id="me-next-cost" style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);">Cost: 4 pts → Close</span>
+              <button class="tab-train-spend-btn blue-spend" id="me-spend-btn" onclick="spendOnMindsEye()">Advance</button>
             </div>
           </div>
           <div
@@ -1257,12 +1045,8 @@
               </div>
             </div>
             <div>
-              <div class="meta-panel-title">Passive abilities (baseline)</div>
-              <textarea
-                class="meta-textarea"
-                id="psion-passive"
-                placeholder="Empathic mist — involuntary emotional reception…"
-              ></textarea>
+              <div class="meta-panel-title">Passive abilities — Mind's Eye</div>
+              <div id="passive-abilities-panel" style="display:flex;flex-direction:column;gap:0.4rem;"></div>
               <div style="margin-top:0.75rem;">
                 <div class="meta-panel-title">Psi smoke appearance</div>
                 <textarea
@@ -1277,52 +1061,11 @@
 
         <!-- Meta panel -->
         <div class="meta-panel" id="panel-meta">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-            <div>
-              <div class="meta-panel-title">Meta ability definition</div>
-              <textarea
-                class="meta-textarea"
-                id="meta-definition"
-                style="min-height:100px;"
-                placeholder="Describe your Meta ability specifically."
-              ></textarea>
-              <div style="margin-top:0.75rem;">
-                <div class="meta-panel-title">Fatigue cost notes</div>
-                <textarea
-                  class="meta-textarea"
-                  id="meta-fatigue-notes"
-                  placeholder="Roll result and negotiated cost modifiers…"
-                ></textarea>
-              </div>
-              <div style="margin-top:0.75rem;">
-                <div class="meta-panel-title">Meta abilities</div>
-                <div class="additive-list" id="meta-ability-list"></div>
-                <button
-                  class="add-btn add-purple"
-                  onclick="addAbility('meta-ability-list','meta')"
-                >
-                  + add ability
-                </button>
-              </div>
-            </div>
-            <div>
-              <div class="meta-panel-title">Stat boosts</div>
-              <div class="boost-count-row">
-                <span class="boost-count-label">Boost slots</span>
-                <button class="boost-count-btn" onclick="changeBoostCount(-1)">
-                  −
-                </button>
-                <span class="boost-count-val" id="boost-count-val">1</span>
-                <button class="boost-count-btn" onclick="changeBoostCount(1)">
-                  +
-                </button>
-              </div>
-              <div
-                class="boost-slots-container"
-                id="boost-slots-container"
-              ></div>
-            </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+            <div class="meta-panel-title" style="margin-bottom:0;">Meta Abilities</div>
+            <button class="add-btn add-purple" style="width:auto;padding:0.25rem 0.75rem;font-size:0.58rem;" onclick="openMetaAbilityDialog()">+ Add Ability</button>
           </div>
+          <div id="meta-ability-cards"></div>
         </div>
 
         <!-- Ordinary note -->
@@ -1811,26 +1554,6 @@
     </div>
     <div class="save-toast" id="save-toast"></div>
 
-    <!-- Support Modal -->
-    <div id="support-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;padding:1rem;">
-      <div style="background:var(--surface);border:1px solid var(--border);padding:1.5rem;max-width:440px;width:100%;position:relative;">
-        <button onclick="document.getElementById('support-modal').style.display='none'" style="position:absolute;top:0.75rem;right:0.75rem;background:none;border:none;color:var(--text-dim);font-size:1rem;cursor:pointer;">✕</button>
-        <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;margin-bottom:0.75rem;">NEXUS — Help &amp; Support</div>
-        <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.15em;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;">About</div>
-        <p style="font-family:var(--font-body);font-size:0.9rem;color:var(--text-dim);margin-bottom:1rem;line-height:1.6;">NEXUS Character Sheet v2.0 — Owlbear Rodeo Extension. A digital-native character sheet for the NEXUS tabletop RPG system.</p>
-        <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.15em;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;">Support &amp; Issues</div>
-        <p style="font-family:var(--font-body);font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem;line-height:1.6;">For bug reports, feature requests, or questions:</p>
-        <a href="https://rodentroyaltywiki.com" target="_blank" rel="noopener" style="display:block;font-family:var(--font-mono);font-size:0.65rem;color:var(--accent);letter-spacing:0.1em;margin-bottom:0.4rem;">rodentroyaltywiki.com</a>
-        <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.15em;color:var(--text-muted);text-transform:uppercase;margin:0.75rem 0 0.4rem;">Tips</div>
-        <ul style="font-family:var(--font-body);font-size:0.85rem;color:var(--text-dim);padding-left:1.25rem;line-height:1.8;">
-          <li>Hit <strong>Save</strong> to sync your character across sessions</li>
-          <li>Export JSON as a backup or to share with your GM</li>
-          <li>Portrait, stats, and all fields save automatically when you save</li>
-          <li>Use multiple slots for different characters</li>
-        </ul>
-      </div>
-    </div>
-
     <script>
       /* ══════════════════════════════════════════════
          NEXUS — Core data tables
@@ -1875,7 +1598,7 @@
         proficient:'#7ab0c4', expert:'#c47a4a', master:'var(--accent)',
         enhanced:'#b47ace', remarkable:'#ce7ab4', extraordinary:'#ce4a7a', legendary:'#ff4a4a'
       };
-      const mindsEyePool = {close:4, focus:8, reach:12, beyond:16};
+      const mindsEyePool = {dormant:0, close:4, focus:8, reach:12, beyond:16};
       const rankNames = ['Enhanced','Remarkable','Extraordinary','Legendary','Absolute outer edge'];
       const boostableStats = ['Vigor','Fortitude','Might','Expertise','Wit','Insight'];
       const allStats = ['vigor','fortitude','might','expertise','wit','insight','intuition','charm'];
@@ -1887,9 +1610,6 @@
       function getBacklashDie(restrictionCount) {
         return backlashDice[Math.min(restrictionCount, 4)];
       }
-
-      let trainingPoints = {};
-      allStats.forEach(s => trainingPoints[s] = 0);
 
       let statusEffects = {
         poison: { active: false, level: 1 },
@@ -2139,163 +1859,176 @@
       }
 
       /* ══════════════════════════════════════════════
-         TRAINING POINTS
+         UNIFIED TRAINING POOL
       ══════════════════════════════════════════════ */
-      function doTrain(pts) {
-        const stat = document.getElementById('training-stat-select').value;
-        trainingPoints[stat] = (trainingPoints[stat] || 0) + pts;
-        renderTrainingPools();
-        toast(`+${pts} training point${pts > 1 ? 's' : ''} added to ${stat.charAt(0).toUpperCase() + stat.slice(1)}`, 'var(--teal)');
+      let trainingPool = 0;
+
+      const MW_RANK_COSTS = [4, 8, 12, 16, 20];
+      const ME_STAGE_ORDER = ['dormant','close','focus','reach','beyond'];
+      const ME_STAGE_COSTS = [4, 8, 12, 16];
+
+      function earnTraining(pts) {
+        trainingPool += pts;
+        renderTrainingPool();
+        toast('+' + pts + ' training point' + (pts > 1 ? 's' : '') + ' earned', 'var(--teal)');
       }
 
-      function renderTrainingPools() {
-        const display = document.getElementById('tp-pool-display');
-        display.innerHTML = '';
-        allStats.forEach(stat => {
-          const pts = trainingPoints[stat] || 0;
-          const currentTier = document.getElementById('stat-' + stat).value;
-          const currentIdx = tierOrder.indexOf(currentTier);
-          const maxTier = (activeTypes.has('meta') && getMetaBoostedStats().has(stat)) ? tierOrder.length - 1 : tierOrder.indexOf('master');
-          const cost = currentIdx < tierOrder.length - 1 ? (trainingCosts[currentTier] || 999) : null;
-          const canRankUp = cost !== null && pts >= cost && currentIdx < maxTier;
-          const maxed = currentIdx >= maxTier;
-          const row = document.createElement('div');
-          row.className = 'tp-stat-row';
-          const pct = cost ? Math.min(100, Math.round((pts / cost) * 100)) : 100;
-          const nextTier = !maxed && currentIdx < tierOrder.length - 1 ? tierOrder[currentIdx + 1] : '';
-          row.innerHTML = `<span class="tp-stat-name">${stat}</span><div class="tp-stat-bar"><div class="tp-progress"><div class="tp-progress-fill" style="width:${maxed ? 100 : pct}%;background:${maxed ? 'var(--text-muted)' : 'var(--teal)'};"></div></div><span class="tp-pts">${pts}</span><span class="tp-needed">${maxed ? 'MAX' : cost ? `→${nextTier}` : ''}</span><button class="tp-rankup-btn" onclick="rankUpFromTraining('${stat}')" ${!canRankUp ? 'disabled' : ''}>Rank up</button></div>`;
-          display.appendChild(row);
-        });
+      function renderTrainingPool() {
+        const el = document.getElementById('tp-pool-count');
+        if (el) el.textContent = trainingPool;
+        allStats.forEach(stat => updateStatSpendBtn(stat));
+        updateMWSpendBtn();
+        updateMESpendBtn();
       }
 
-      function rankUpFromTraining(stat) {
-        const currentTier = document.getElementById('stat-' + stat).value;
-        const currentIdx = tierOrder.indexOf(currentTier);
-        const cost = trainingCosts[currentTier];
-        const pts = trainingPoints[stat] || 0;
-        const maxTier = (activeTypes.has('meta') && getMetaBoostedStats().has(stat)) ? tierOrder.length - 1 : tierOrder.indexOf('master');
-        if (pts < cost || currentIdx >= maxTier) return;
-        trainingPoints[stat] = pts - cost;
+      function getStatCost(stat) {
+        const isMeta = activeTypes.has('meta') && typeof getMetaBoostedStats === 'function' && getMetaBoostedStats().has(stat);
+        return isMeta ? 4 : 2;
+      }
+
+      function updateStatSpendBtn(stat) {
+        const btn = document.getElementById('tp-spend-' + stat);
+        const costEl = document.getElementById('tp-cost-' + stat);
+        if (!btn || !costEl) return;
+        const cost = getStatCost(stat);
+        const sel = document.getElementById('stat-' + stat);
+        if (!sel) return;
+        const currentIdx = tierOrder.indexOf(sel.value);
+        const maxTier = (activeTypes.has('meta') && typeof getMetaBoostedStats === 'function' && getMetaBoostedStats().has(stat))
+          ? tierOrder.length - 1 : tierOrder.indexOf('master');
+        const atMax = currentIdx >= maxTier;
+        costEl.textContent = atMax ? 'MAX' : cost + ' pts';
+        btn.disabled = atMax || trainingPool < cost;
+        btn.style.color = atMax ? 'var(--text-muted)' : trainingPool >= cost ? 'var(--teal)' : 'var(--text-muted)';
+        btn.style.borderColor = atMax ? 'var(--border)' : trainingPool >= cost ? 'var(--teal)' : 'var(--border)';
+      }
+
+      function spendOnStat(stat) {
+        const cost = getStatCost(stat);
+        if (trainingPool < cost) { toast('Not enough points — need ' + cost, 'var(--red)'); return; }
+        const sel = document.getElementById('stat-' + stat);
+        const currentIdx = tierOrder.indexOf(sel.value);
+        const maxTier = (activeTypes.has('meta') && typeof getMetaBoostedStats === 'function' && getMetaBoostedStats().has(stat))
+          ? tierOrder.length - 1 : tierOrder.indexOf('master');
+        if (currentIdx >= maxTier) { toast(stat + ' is already maxed', 'var(--red)'); return; }
+        trainingPool -= cost;
         const nextTier = tierOrder[currentIdx + 1];
-        document.getElementById('stat-' + stat).value = nextTier;
+        sel.value = nextTier;
         if (stat === 'vigor') updateVigordependent();
         else if (stat === 'fortitude') onFortChange();
         else updateStatDie(stat);
-        renderTrainingPools();
-        toast(`${stat.charAt(0).toUpperCase() + stat.slice(1)} ranked up to ${nextTier}!`, 'var(--teal)');
+        renderTrainingPool();
+        toast(stat.charAt(0).toUpperCase() + stat.slice(1) + ' → ' + nextTier + '!', 'var(--teal)');
       }
 
-      /* ══════════════════════════════════════════════
-         MIND'S EYE TRAINING (Psion tab)
-      ══════════════════════════════════════════════ */
-      const mindsEyeOrder = ['close','focus','reach','beyond'];
-      const mindsEyeCosts = { close: 6, focus: 10, reach: 15 }; // cost to advance FROM this stage
-      let meTrainingPoints = 0;
-
-      function addMeTraining(pts) {
-        meTrainingPoints += pts;
-        renderMeTraining();
-        toast('+' + pts + ' Mind\'s Eye training point' + (pts > 1 ? 's' : '') + ' added', 'var(--blue)');
+      function getMWRank() {
+        return parseInt(document.getElementById('mw-rank-val')?.textContent || '0', 10);
       }
 
-      function renderMeTraining() {
-        const display = document.getElementById('me-training-pts-display');
-        const fill = document.getElementById('me-training-fill');
-        const status = document.getElementById('me-training-status');
-        const btn = document.getElementById('me-training-advance-btn');
-        const note = document.getElementById('me-training-cost-note');
-        if (!display) return;
-        display.textContent = meTrainingPoints + ' pts';
-        const curStage = currentMindsEye;
-        const curIdx = curStage ? mindsEyeOrder.indexOf(curStage) : -1;
-        if (curIdx < 0) {
-          fill.style.width = '0%';
-          status.textContent = '—';
-          btn.disabled = true;
-          note.textContent = 'Select a stage above to set current level';
-          return;
+      function updateMWSpendBtn() {
+        const btn = document.getElementById('mw-spend-btn');
+        const costEl = document.getElementById('mw-next-cost');
+        const rankEl = document.getElementById('mw-rank-display');
+        if (!btn) return;
+        const rank = getMWRank();
+        if (rank >= 5) {
+          if (costEl) costEl.textContent = 'Max rank reached';
+          if (rankEl) rankEl.textContent = 'Rank 5 / 5';
+          btn.disabled = true; return;
         }
-        if (curIdx >= mindsEyeOrder.length - 1) {
-          fill.style.width = '100%';
-          fill.style.background = 'var(--text-muted)';
-          status.textContent = 'MAX — Beyond';
-          btn.disabled = true;
-          note.textContent = 'Mind\'s Eye is at maximum stage';
-          return;
-        }
-        const nextStage = mindsEyeOrder[curIdx + 1];
-        const cost = mindsEyeCosts[curStage] || 99;
-        const pct = Math.min(100, Math.round((meTrainingPoints / cost) * 100));
-        fill.style.width = pct + '%';
-        fill.style.background = 'var(--blue)';
-        status.textContent = meTrainingPoints + ' / ' + cost;
-        btn.disabled = meTrainingPoints < cost;
-        note.textContent = cost + ' pts to advance → ' + nextStage.charAt(0).toUpperCase() + nextStage.slice(1) + ' (pool: ' + mindsEyePool[nextStage] + ')';
+        const cost = MW_RANK_COSTS[rank];
+        if (costEl) costEl.textContent = 'Cost: ' + cost + ' pts';
+        if (rankEl) rankEl.textContent = 'Rank ' + rank + ' / 5';
+        btn.disabled = trainingPool < cost;
       }
 
-      function advanceMindsEye() {
-        const curIdx = currentMindsEye ? mindsEyeOrder.indexOf(currentMindsEye) : -1;
-        if (curIdx < 0 || curIdx >= mindsEyeOrder.length - 1) return;
-        const cost = mindsEyeCosts[currentMindsEye] || 99;
-        if (meTrainingPoints < cost) return;
-        meTrainingPoints -= cost;
-        const nextStage = mindsEyeOrder[curIdx + 1];
+      function spendOnMagicWeight() {
+        const rank = getMWRank();
+        if (rank >= 5) { toast('Magic Weight is at max rank', 'var(--red)'); return; }
+        const cost = MW_RANK_COSTS[rank];
+        if (trainingPool < cost) { toast('Not enough points — need ' + cost, 'var(--red)'); return; }
+        trainingPool -= cost;
+        buildWeightPips(rank + 1);
+        renderTrainingPool();
+        toast('Magic Weight → Rank ' + (rank + 1) + '!', 'var(--accent)');
+      }
+
+      function updateMESpendBtn() {
+        const btn = document.getElementById('me-spend-btn');
+        const costEl = document.getElementById('me-next-cost');
+        const stageEl = document.getElementById('me-stage-display');
+        if (!btn) return;
+        const curStage = currentMindsEye || 'dormant';
+        const curIdx = ME_STAGE_ORDER.indexOf(curStage);
+        if (stageEl) stageEl.textContent = curStage.charAt(0).toUpperCase() + curStage.slice(1);
+        if (curIdx >= ME_STAGE_ORDER.length - 1) {
+          if (costEl) costEl.textContent = 'Max stage reached';
+          btn.disabled = true; return;
+        }
+        const cost = ME_STAGE_COSTS[curIdx];
+        const nextStage = ME_STAGE_ORDER[curIdx + 1];
+        if (costEl) costEl.textContent = 'Cost: ' + cost + ' pts → ' + nextStage.charAt(0).toUpperCase() + nextStage.slice(1);
+        btn.disabled = trainingPool < cost;
+      }
+
+      function spendOnMindsEye() {
+        const curStage = currentMindsEye || 'dormant';
+        const curIdx = ME_STAGE_ORDER.indexOf(curStage);
+        if (curIdx >= ME_STAGE_ORDER.length - 1) { toast("Mind's Eye is maxed", 'var(--red)'); return; }
+        const cost = ME_STAGE_COSTS[curIdx];
+        if (trainingPool < cost) { toast('Not enough points — need ' + cost, 'var(--red)'); return; }
+        trainingPool -= cost;
+        const nextStage = ME_STAGE_ORDER[curIdx + 1];
         setMindsEye(nextStage);
-        renderMeTraining();
-        toast('Mind\'s Eye advanced to ' + nextStage.charAt(0).toUpperCase() + nextStage.slice(1) + '!', 'var(--blue)');
+        renderTrainingPool();
+        toast("Mind's Eye → " + nextStage.charAt(0).toUpperCase() + nextStage.slice(1) + '!', 'var(--blue)');
       }
+
+      function getAbilityCost(listId) {
+        const count = document.querySelectorAll('#' + listId + ' .additive-item').length;
+        return 2 + Math.floor(count / 2) * 2;
+      }
+
+      function spendOnAbility(listId, type) {
+        const cost = getAbilityCost(listId);
+        if (trainingPool < cost) { toast('Not enough points — need ' + cost, 'var(--red)'); return; }
+        trainingPool -= cost;
+        addAbility(listId, type);
+        renderTrainingPool();
+        toast('New ability added!', 'var(--purple)');
+      }
+
+      function spendOnMagicSystem() {
+        const cost = 6;
+        if (trainingPool < cost) { toast('Not enough points — need ' + cost, 'var(--red)'); return; }
+        trainingPool -= cost;
+        addMageSystem();
+        renderTrainingPool();
+        toast('New magic system unlocked!', 'var(--accent)');
+      }
+
+      function spendOnRestriction(systemCard) {
+        const cost = 4;
+        if (trainingPool < cost) { toast('Not enough points — need ' + cost, 'var(--red)'); return; }
+        trainingPool -= cost;
+        addRestriction(systemCard);
+        renderTrainingPool();
+        toast('New restriction added!', 'var(--accent)');
+      }
+
+      // Legacy stubs for serialize compatibility
+      let trainingPoints = {};
+      allStats.forEach(s => trainingPoints[s] = 0);
+      let meTrainingPoints = 0;
+      let mwTrainingPoints = 0;
+      function renderTrainingPools() { renderTrainingPool(); }
+      function renderMeTraining() { updateMESpendBtn(); }
+      function renderMwTraining() { updateMWSpendBtn(); }
 
       /* ══════════════════════════════════════════════
-         MAGIC WEIGHT TRAINING (Mage tab)
+         TRAINING POINTS
+         MIND'S EYE & MAGIC WEIGHT — handled by unified training pool above
       ══════════════════════════════════════════════ */
-      const MW_PIP_COST = 5;
-      let mwTrainingPoints = 0;
-
-      function addMwTraining(pts) {
-        mwTrainingPoints += pts;
-        renderMwTraining();
-        toast('+' + pts + ' Magic Weight training point' + (pts > 1 ? 's' : '') + ' added', 'var(--accent)');
-      }
-
-      function renderMwTraining() {
-        const display = document.getElementById('mw-training-pts-display');
-        const fill = document.getElementById('mw-training-fill');
-        const status = document.getElementById('mw-training-status');
-        const btn = document.getElementById('mw-training-add-btn');
-        if (!display) return;
-        display.textContent = mwTrainingPoints + ' pts';
-        const currentPips = document.querySelectorAll('.weight-pip.filled').length;
-        const maxPips = 10;
-        if (currentPips >= maxPips) {
-          fill.style.width = '100%';
-          fill.style.background = 'var(--text-muted)';
-          status.textContent = 'MAX';
-          btn.disabled = true;
-          return;
-        }
-        const pct = Math.min(100, Math.round((mwTrainingPoints / MW_PIP_COST) * 100));
-        fill.style.width = pct + '%';
-        fill.style.background = 'var(--accent)';
-        status.textContent = mwTrainingPoints + ' / ' + MW_PIP_COST;
-        btn.disabled = mwTrainingPoints < MW_PIP_COST;
-      }
-
-      function spendMwTraining() {
-        const currentPips = document.querySelectorAll('.weight-pip.filled').length;
-        if (currentPips >= 10 || mwTrainingPoints < MW_PIP_COST) return;
-        mwTrainingPoints -= MW_PIP_COST;
-        // Fill next pip
-        const allPips = document.querySelectorAll('.weight-pip');
-        const nextPip = [...allPips].find(p => !p.classList.contains('filled'));
-        if (nextPip) {
-          nextPip.classList.add('filled');
-          const newCount = document.querySelectorAll('.weight-pip.filled').length;
-          const weightLabel = document.getElementById('weight-label');
-          if (weightLabel) weightLabel.textContent = 'Weight: ' + newCount + ' / 10';
-        }
-        renderMwTraining();
-        toast('Magic Weight pip added!', 'var(--accent)');
-      }
 
       /* ══════════════════════════════════════════════
          STATUS EFFECTS
@@ -2392,9 +2125,9 @@
       function getMetaBoostedStats() {
         const boosted = new Set();
         if (!activeTypes.has('meta')) return boosted;
-        document.querySelectorAll('#boost-slots-container .boost-slot').forEach(slot => {
-          const sel = slot.querySelector('[data-key="stat"]');
-          if (sel && sel.value) boosted.add(sel.value.toLowerCase());
+        // Read from new simple meta ability cards
+        document.querySelectorAll('#meta-ability-cards .mage-system-card[data-type="simple"]').forEach(card => {
+          if (card.dataset.stat) boosted.add(card.dataset.stat);
         });
         return boosted;
       }
@@ -2484,9 +2217,9 @@
         c.innerHTML = '';
         for (let i = 0; i < count; i++) {
           const b = document.createElement('div');
-          b.className = 'track-box' + (filledSet && filledSet.has(i) ? ' filled-' + type : '');
+          b.className = 'track-box' + (type && filledSet && filledSet.has(i) ? ' filled-' + type : '');
           b.onclick = function() {
-            this.classList.toggle('filled-' + type);
+            if (type) this.classList.toggle('filled-' + type);
             updateCounts();
             if (cid === 'wpool-boxes') updateWoundStatus();
           };
@@ -2516,10 +2249,15 @@
          METAPHYSICAL TYPE
       ══════════════════════════════════════════════ */
       function toggleType(type) {
+        const wasActive = activeTypes.has(type);
         if (activeTypes.has(type)) { activeTypes.delete(type); } else { activeTypes.add(type); }
         if ((type === 'mage' || type === 'psion' || type === 'meta') && activeTypes.has('ordinary')) activeTypes.delete('ordinary');
         if (type === 'ordinary') { activeTypes.clear(); activeTypes.add('ordinary'); }
         renderTypeButtons(); renderTypePanels(); updateAllStatOptions(); updateTypeSummary();
+        // Open mage system dialog the first time mage is activated
+        if (type === 'mage' && !wasActive && document.querySelectorAll('.mage-system-card').length === 0) {
+          setTimeout(() => openMageSystemDialog(), 150);
+        }
       }
 
       function renderTypeButtons() {
@@ -2531,13 +2269,13 @@
 
       function renderTypePanels() {
         document.getElementById('panel-mage').classList.toggle('visible', activeTypes.has('mage'));
-      if (activeTypes.has('mage') && !document.querySelector('.mage-system-card')) addMageSystem();
         document.getElementById('panel-psion').classList.toggle('visible', activeTypes.has('psion'));
         document.getElementById('panel-meta').classList.toggle('visible', activeTypes.has('meta'));
         const pt = document.getElementById('psi-track');
         if (activeTypes.has('psion')) {
           pt.style.display = 'block';
-          if (!currentMindsEye) setMindsEye('close');
+          if (!currentMindsEye) setMindsEye('dormant');
+          else renderPassiveAbilities();
           [0,1,2,3].forEach(i => document.getElementById('rest-psi-' + i).style.display = 'block');
         } else {
           pt.style.display = 'none';
@@ -2551,8 +2289,161 @@
         document.querySelectorAll('.eye-stage').forEach(s => s.classList.remove('active'));
         document.querySelector('.eye-stage[data-stage="' + stage + '"]').classList.add('active');
         updatePsiTrack();
+        renderPassiveAbilities();
         renderMeTraining();
       }
+
+      /* ══════════════════════════════════════════════
+         PASSIVE ABILITIES — tiered by Mind's Eye stage
+      ══════════════════════════════════════════════ */
+      const PASSIVE_ABILITIES = [
+        {
+          stage: 'dormant',
+          abilities: [
+            { name: 'Empathic Mist', desc: 'A faint, involuntary hunch of the emotional state of beings nearby. Vague impressions only — not readable as language or intent.' },
+            { name: 'Soul Sense', desc: 'A slight, instinctive feeling of discomfort or unease when a being is in the vicinity but out of direct sight.' }
+          ]
+        },
+        {
+          stage: 'close',
+          abilities: [
+            { name: 'Empathic Sense', desc: 'Involuntary emotional reception. The emotions of nearby beings bleed into your awareness without effort or consent — you cannot turn this off.' },
+            { name: 'Soul Awareness', desc: 'Involuntary sensing of nearby minds. You passively register the presence and rough location of conscious beings even without sight.' }
+          ]
+        },
+        {
+          stage: 'focus',
+          abilities: [
+            { name: 'Empathic Nullification', desc: 'The ability to silence the empathic mist of others and of oneself. You can dampen the emotional bleed-through you emit and block incoming empathic noise from other psions.' },
+            { name: 'Soul Denial', desc: 'A passive shield that protects the self against souls — unwanted soul contact or intrusion is deflected.' }
+          ]
+        },
+        {
+          stage: 'reach',
+          abilities: [
+            { name: 'Cognitive Perception', desc: 'You can read deeper into the emotions around you to find surface-level thoughts. Not full telepathy — impressions, images, and fragments float to the surface.' },
+            { name: 'Soul Sight', desc: 'Souls now appear as visible apparitions — perceivable alongside their physical form, distinct and present.' }
+          ]
+        },
+        {
+          stage: 'beyond',
+          abilities: [
+            { name: 'Telepathy', desc: 'You can communicate directly with another being using psionic energy alone. No sound or physical signal required — thought to thought.' },
+            { name: 'Tactile Soul', desc: 'Souls can now be touched and interacted with as though they were physical. You can grasp, move, and affect souls with deliberate intent.' }
+          ]
+        }
+      ];
+
+      const ME_STAGE_ORDER_LIST = ['dormant', 'close', 'focus', 'reach', 'beyond'];
+
+      function renderPassiveAbilities() {
+        const panel = document.getElementById('passive-abilities-panel');
+        if (!panel) return;
+        panel.innerHTML = '';
+        const currentIdx = ME_STAGE_ORDER_LIST.indexOf(currentMindsEye || 'dormant');
+
+        // Build carousel wrapper
+        const carousel = document.createElement('div');
+        carousel.className = 'passive-carousel';
+
+        const track = document.createElement('div');
+        track.className = 'passive-carousel-track';
+
+        let activeSlide = Math.max(0, currentIdx); // start on current stage
+        const totalSlides = PASSIVE_ABILITIES.length;
+
+        PASSIVE_ABILITIES.forEach((group, i) => {
+          const stageIdx = ME_STAGE_ORDER_LIST.indexOf(group.stage);
+          const isUnlocked = currentIdx >= stageIdx;
+          const stageCap = group.stage.charAt(0).toUpperCase() + group.stage.slice(1);
+
+          const slide = document.createElement('div');
+          slide.className = 'passive-carousel-slide ' + (isUnlocked ? 'slide-unlocked' : 'slide-locked');
+
+          const stageRow = document.createElement('div');
+          stageRow.className = 'passive-slide-stage';
+          const dot = document.createElement('span'); dot.className = 'passive-slide-stage-dot';
+          const stageText = document.createElement('span'); stageText.textContent = stageCap;
+          if (!isUnlocked) {
+            const lockTag = document.createElement('span');
+            lockTag.style.cssText = 'font-size:0.46rem;border:1px solid var(--border);padding:0 4px;color:var(--text-muted);letter-spacing:0.1em;';
+            lockTag.textContent = 'locked';
+            stageRow.appendChild(dot); stageRow.appendChild(stageText); stageRow.appendChild(lockTag);
+          } else {
+            stageRow.appendChild(dot); stageRow.appendChild(stageText);
+          }
+          slide.appendChild(stageRow);
+
+          group.abilities.forEach(ab => {
+            const entry = document.createElement('div');
+            entry.className = 'passive-ability-entry';
+            const name = document.createElement('div'); name.className = 'passive-ability-name'; name.textContent = ab.name;
+            const desc = document.createElement('div'); desc.className = 'passive-ability-desc'; desc.textContent = ab.desc;
+            entry.appendChild(name); entry.appendChild(desc);
+            slide.appendChild(entry);
+          });
+
+          track.appendChild(slide);
+        });
+
+        carousel.appendChild(track);
+
+        // Nav bar
+        const nav = document.createElement('div');
+        nav.className = 'passive-carousel-nav';
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'passive-nav-btn';
+        prevBtn.textContent = '‹';
+        prevBtn.title = 'Previous stage';
+
+        const pipsRow = document.createElement('div');
+        pipsRow.className = 'passive-nav-pips';
+        const pips = [];
+        PASSIVE_ABILITIES.forEach((group, i) => {
+          const stageIdx = ME_STAGE_ORDER_LIST.indexOf(group.stage);
+          const isUnlocked = currentIdx >= stageIdx;
+          const pip = document.createElement('div');
+          pip.className = 'passive-nav-pip' + (i === activeSlide ? ' pip-active' : '') + (!isUnlocked ? ' pip-locked' : '');
+          pip.title = group.stage.charAt(0).toUpperCase() + group.stage.slice(1);
+          pip.addEventListener('click', () => goTo(i));
+          pips.push(pip);
+          pipsRow.appendChild(pip);
+        });
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'passive-nav-btn';
+        nextBtn.textContent = '›';
+        nextBtn.title = 'Next stage';
+
+        function goTo(idx) {
+          activeSlide = Math.max(0, Math.min(totalSlides - 1, idx));
+          track.style.transform = 'translateX(-' + (activeSlide * 100) + '%)';
+          pips.forEach((p, i) => {
+            const stageIdx = ME_STAGE_ORDER_LIST.indexOf(PASSIVE_ABILITIES[i].stage);
+            const unlocked = currentIdx >= stageIdx;
+            p.className = 'passive-nav-pip' + (i === activeSlide ? ' pip-active' : '') + (!unlocked ? ' pip-locked' : '');
+          });
+          prevBtn.disabled = activeSlide === 0;
+          nextBtn.disabled = activeSlide === totalSlides - 1;
+        }
+
+        prevBtn.addEventListener('click', () => goTo(activeSlide - 1));
+        nextBtn.addEventListener('click', () => goTo(activeSlide + 1));
+
+        nav.appendChild(prevBtn);
+        nav.appendChild(pipsRow);
+        nav.appendChild(nextBtn);
+        carousel.appendChild(nav);
+        panel.appendChild(carousel);
+
+        // Init position
+        track.style.transform = 'translateX(-' + (activeSlide * 100) + '%)';
+        prevBtn.disabled = activeSlide === 0;
+        nextBtn.disabled = activeSlide === totalSlides - 1;
+      }
+
+
 
       function updatePsiTrack() {
         if (!currentMindsEye) return;
@@ -2601,10 +2492,12 @@
          DECLARE HELPERS
       ══════════════════════════════════════════════ */
       function flashBtn(btn, label, colorClass) {
-        btn.classList.add('declared', colorClass || '');
+        const classes = ['declared'];
+        if (colorClass) classes.push(colorClass);
+        btn.classList.add(...classes);
         const prev = btn.textContent;
         btn.textContent = '✓ ' + label;
-        setTimeout(() => { btn.classList.remove('declared', colorClass || ''); btn.textContent = prev; }, 1400);
+        setTimeout(() => { btn.classList.remove(...classes); btn.textContent = prev; }, 1400);
       }
 
       function fillFatigue(amount) {
@@ -2692,6 +2585,31 @@
         if (overflow > 0) msg += ` (${overflow} overflow)`;
         toast(msg, overflow > 0 ? 'var(--red)' : 'var(--accent)');
         flashBtn(btn, 'Cast');
+        // Auto-roll backlash if system has fewer than 4 restrictions
+        const systemCard = item.closest('.mage-system-card');
+        if (systemCard) autoRollBacklash(systemCard);
+      }
+
+      function autoRollBacklash(systemCard) {
+        const restrItems = systemCard.querySelectorAll('.restriction-item-text');
+        const count = restrItems.length;
+        const die = getBacklashDie(count);
+        if (die === 'none') return; // 4+ restrictions, no backlash
+        const sides = parseInt(die.replace('d', ''), 10);
+        const roll = Math.ceil(Math.random() * sides);
+        const weightRank = getMWRank();
+        const rawWounds = Math.max(0, roll - weightRank);
+        let woundsDealt = 0;
+        if (rawWounds > 0) {
+          const boxes = [...document.querySelectorAll('#wpool-boxes .track-box')];
+          const empty = boxes.filter(b => !b.classList.contains('filled-wpool'));
+          woundsDealt = Math.min(rawWounds, empty.length);
+          empty.slice(0, woundsDealt).forEach(b => b.classList.add('filled-wpool'));
+          rebuildTracks();
+        }
+        const absorbed = weightRank > 0 ? ` − ${weightRank} absorbed` : '';
+        const woundMsg = rawWounds > 0 ? ` → ${woundsDealt} wound${woundsDealt !== 1 ? 's' : ''}` : ' → fully absorbed';
+        toast(`Backlash ${die} → ${roll}${absorbed}${woundMsg}`, rawWounds > 0 ? 'var(--red)' : 'var(--accent)');
       }
 
       function declareMetaAbility(itemId) {
@@ -3174,12 +3092,204 @@
         // CONSUMABLE panel
         body.appendChild(panel('consumable','var(--green)','Consumable Properties', el => {
           const g = document.createElement('div'); g.className = 'inv-g3';
-          g.appendChild(ifield('Uses','conUses',d.conUses,'1',true));
+
+          // Uses field
+          const usesFg = document.createElement('div'); usesFg.className = 'inv-fg';
+          const usesLbl = document.createElement('div'); usesLbl.className = 'inv-sub-label'; usesLbl.textContent = 'Max Uses';
+          const usesInp = document.createElement('input'); usesInp.className = 'inv-field-input';
+          usesInp.style.fontFamily = 'var(--font-mono)';
+          usesInp.setAttribute('data-key', 'conUses'); usesInp.type = 'number'; usesInp.min = '1';
+          usesInp.placeholder = '1'; usesInp.value = d.conUses || '1';
+          usesFg.appendChild(usesLbl); usesFg.appendChild(usesInp);
+
+          g.appendChild(usesFg);
           g.appendChild(iselect('Action','conAction',[['Instant','Instant'],['Action','Action'],['Full Scene','Full Scene'],['Extended','Extended']],d.conAction));
           g.appendChild(ifield('Duration','conDuration',d.conDuration,'Immediate…'));
           el.appendChild(g);
-          el.appendChild(itextarea('Effect','conEffect',d.conEffect,'What happens…',2));
-          el.appendChild(itextarea('Side Effects','conDrawback',d.conDrawback,'Drawbacks…',2));
+
+          // ── KIND ROW ──
+          const kindRow = document.createElement('div');
+          kindRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.4rem;';
+
+          const kindFg = document.createElement('div'); kindFg.className = 'inv-fg';
+          const kindLbl = document.createElement('div'); kindLbl.className = 'inv-sub-label'; kindLbl.textContent = 'Consumable Kind';
+          const kindSel = document.createElement('select'); kindSel.className = 'inv-field-sel'; kindSel.setAttribute('data-key','conKind');
+          [['other','Other'],['food','Food (heals wounds)'],['water','Water (heals fatigue)']].forEach(([v,l]) => {
+            const o = document.createElement('option'); o.value = v; o.textContent = l; kindSel.appendChild(o);
+          });
+          kindSel.value = d.conKind || 'other';
+          kindFg.appendChild(kindLbl); kindFg.appendChild(kindSel);
+
+          // Heal amount field — shown for food/water only
+          const healFg = document.createElement('div'); healFg.className = 'inv-fg';
+          const healLbl = document.createElement('div'); healLbl.className = 'inv-sub-label'; healLbl.id = 'heal-lbl-' + id; healLbl.textContent = 'Amount healed';
+          const healInp = document.createElement('input'); healInp.className = 'inv-field-input';
+          healInp.style.fontFamily = 'var(--font-mono)';
+          healInp.setAttribute('data-key','conHealAmt'); healInp.type = 'number'; healInp.min = '1';
+          healInp.placeholder = '1'; healInp.value = d.conHealAmt || '1';
+          healFg.appendChild(healLbl); healFg.appendChild(healInp);
+          healFg.id = 'heal-fg-' + id;
+
+          kindRow.appendChild(kindFg); kindRow.appendChild(healFg);
+          el.appendChild(kindRow);
+
+          // Other: free-text effect fields; food/water: label only
+          const effectWrap = document.createElement('div');
+          effectWrap.id = 'effect-wrap-' + id;
+          effectWrap.appendChild(itextarea('Effect','conEffect',d.conEffect,'What happens…',2));
+          effectWrap.appendChild(itextarea('Side Effects','conDrawback',d.conDrawback,'Drawbacks…',2));
+          el.appendChild(effectWrap);
+
+          // Auto-description panel for food/water
+          const autoDesc = document.createElement('div');
+          autoDesc.id = 'auto-desc-' + id;
+          autoDesc.style.cssText = 'font-family:var(--font-mono);font-size:0.52rem;letter-spacing:0.08em;color:var(--text-muted);padding:0.35rem 0.5rem;background:var(--bg);border:1px solid var(--border);margin-bottom:0.4rem;display:none;';
+          el.appendChild(autoDesc);
+
+          function updateKindUI() {
+            const kind = kindSel.value;
+            const isAuto = kind === 'food' || kind === 'water';
+            healFg.style.display = isAuto ? '' : 'none';
+            effectWrap.style.display = isAuto ? 'none' : '';
+            autoDesc.style.display = isAuto ? '' : 'none';
+            if (kind === 'food') {
+              healLbl.textContent = 'Wounds healed';
+              autoDesc.textContent = '▸ On use: removes wounds from pool + vigor threshold (filled → cleared)';
+            } else if (kind === 'water') {
+              healLbl.textContent = 'Fatigue healed';
+              autoDesc.textContent = '▸ On use: removes fatigue slots (filled → cleared)';
+            }
+          }
+
+          kindSel.addEventListener('change', updateKindUI);
+          updateKindUI();
+
+          // ── USE BAR ──
+          const useBar = document.createElement('div');
+          useBar.className = 'con-use-bar';
+
+          const usesRemaining = document.createElement('div');
+          usesRemaining.className = 'con-uses-remaining';
+          const maxUses = parseInt(d.conUses || '1', 10) || 1;
+          const savedRemaining = d.conUsesRemaining != null ? parseInt(d.conUsesRemaining, 10) : maxUses;
+          usesRemaining.textContent = savedRemaining + ' / ' + maxUses;
+          usesRemaining.dataset.remaining = savedRemaining;
+          usesRemaining.dataset.max = maxUses;
+
+          const usesLabel = document.createElement('div');
+          usesLabel.className = 'con-uses-label';
+          usesLabel.textContent = 'uses remaining';
+
+          // Renewable dropdown
+          const renewSel = document.createElement('select');
+          renewSel.className = 'con-renewable-sel';
+          renewSel.setAttribute('data-key', 'conRenewable');
+          [['no','Single-use'],['rest','Renewable (rest)'],['scene','Renewable (scene)'],['yes','Renewable (always)']].forEach(([v,l]) => {
+            const o = document.createElement('option'); o.value = v; o.textContent = l; renewSel.appendChild(o);
+          });
+          renewSel.value = d.conRenewable || 'no';
+
+          const useBtn = document.createElement('button');
+          useBtn.className = 'con-use-btn';
+          useBtn.textContent = 'Use';
+
+          const refillBtn = document.createElement('button');
+          refillBtn.className = 'con-use-btn';
+          refillBtn.style.cssText = 'border-color:var(--blue);color:var(--blue);display:none;';
+          refillBtn.textContent = 'Refill';
+
+          function updateUseBarState() {
+            const rem = parseInt(usesRemaining.dataset.remaining, 10);
+            const renewable = renewSel.value;
+            const depleted = rem <= 0;
+            useBtn.disabled = depleted;
+            refillBtn.style.display = (depleted && renewable !== 'no') ? '' : 'none';
+          }
+
+          refillBtn.addEventListener('click', () => {
+            const max = parseInt(usesRemaining.dataset.max, 10);
+            usesRemaining.dataset.remaining = max;
+            usesRemaining.textContent = max + ' / ' + max;
+            const name = div.querySelector('[data-key="name"]')?.value || 'Item';
+            toast(name + ' — refilled (' + max + ' use' + (max !== 1 ? 's' : '') + ')', 'var(--blue)');
+            updateUseBarState();
+          });
+
+          renewSel.addEventListener('change', updateUseBarState);
+
+          usesInp.addEventListener('change', () => {
+            const newMax = parseInt(usesInp.value, 10) || 1;
+            usesRemaining.dataset.max = newMax;
+            usesRemaining.dataset.remaining = newMax;
+            usesRemaining.textContent = newMax + ' / ' + newMax;
+            updateUseBarState();
+          });
+
+          updateUseBarState();
+
+          function applyConsumableEffect(name) {
+            const kind = kindSel.value;
+            const amt = parseInt(healInp.value, 10) || 1;
+            if (kind === 'food') {
+              // Heal wounds: clear from wpool-boxes first, then vigor-boxes
+              let toHeal = amt;
+              const wpoolFilled = [...document.querySelectorAll('#wpool-boxes .track-box.filled-wpool')];
+              const wpoolHeal = Math.min(toHeal, wpoolFilled.length);
+              wpoolFilled.slice(-wpoolHeal).forEach(b => b.classList.remove('filled-wpool'));
+              toHeal -= wpoolHeal;
+              if (toHeal > 0) {
+                const vigorFilled = [...document.querySelectorAll('#vigor-boxes .track-box.filled-wound')];
+                const vigorHeal = Math.min(toHeal, vigorFilled.length);
+                vigorFilled.slice(-vigorHeal).forEach(b => b.classList.remove('filled-wound'));
+                toHeal -= vigorHeal;
+              }
+              updateCounts(); updateWoundStatus();
+              const healed = amt - toHeal;
+              toast(name + ' eaten — ' + healed + ' wound' + (healed !== 1 ? 's' : '') + ' healed', 'var(--green)');
+            } else if (kind === 'water') {
+              // Heal fatigue: clear from the end
+              const fatFilled = [...document.querySelectorAll('#fatigue-boxes .track-box.filled-fatigue')];
+              const fatHeal = Math.min(amt, fatFilled.length);
+              fatFilled.slice(-fatHeal).forEach(b => b.classList.remove('filled-fatigue'));
+              updateCounts();
+              toast(name + ' drunk — ' + fatHeal + ' fatigue cleared', 'var(--green)');
+            }
+            // 'other' — effect is just descriptive, no automatic mechanic
+          }
+
+          useBtn.addEventListener('click', () => {
+            let rem = parseInt(usesRemaining.dataset.remaining, 10);
+            if (rem <= 0) return;
+            rem--;
+            usesRemaining.dataset.remaining = rem;
+            const max = parseInt(usesRemaining.dataset.max, 10);
+            usesRemaining.textContent = rem + ' / ' + max;
+            const name = div.querySelector('[data-key="name"]')?.value || 'Item';
+
+            // Apply food/water effects
+            applyConsumableEffect(name);
+
+            if (rem <= 0) {
+              const renewable = renewSel.value;
+              if (renewable === 'no') {
+                if (kindSel.value === 'other') toast(name + ' — last use consumed · item removed', 'var(--green)');
+                setTimeout(() => div.remove(), 800);
+              } else {
+                const renewLabel = {'rest':'after a rest','scene':'next scene','yes':'when you choose'}[renewable] || '';
+                if (kindSel.value === 'other') toast(name + ' — all uses spent · refill ' + renewLabel, 'var(--green)');
+              }
+            } else {
+              if (kindSel.value === 'other') toast(name + ' used — ' + rem + ' use' + (rem !== 1 ? 's' : '') + ' remaining', 'var(--green)');
+            }
+            updateUseBarState();
+          });
+
+          useBar.appendChild(usesRemaining);
+          useBar.appendChild(usesLabel);
+          useBar.appendChild(renewSel);
+          useBar.appendChild(refillBtn);
+          useBar.appendChild(useBtn);
+          el.appendChild(useBar);
         }));
 
         // ARCANE panel
@@ -3261,7 +3371,9 @@
           armSpecial:gv('armSpecial'), armTags:getTags('armTags'),
           tlStat:gv('tlStat'), tlReq:gv('tlReq'), tlUse:gv('tlUse'), toolTags:getTags('toolTags'),
           conUses:gv('conUses'), conAction:gv('conAction'), conDuration:gv('conDuration'),
-          conEffect:gv('conEffect'), conDrawback:gv('conDrawback'),
+          conEffect:gv('conEffect'), conDrawback:gv('conDrawback'), conRenewable:gv('conRenewable'),
+          conKind:gv('conKind'), conHealAmt:gv('conHealAmt'),
+          conUsesRemaining:(()=>{ const el = item.querySelector('.con-uses-remaining'); return el ? el.dataset.remaining : null; })(),
           arcWeight:gv('arcWeight'), arcSystem:gv('arcSystem'), arcEffect:gv('arcEffect'),
           arcAttune:gv('arcAttune'), arcTags:getTags('arcTags'),
           psiCost:gv('psiCost'), psiMindseye:gv('psiMindseye'), psiEffect:gv('psiEffect'),
@@ -3291,21 +3403,9 @@
         numLabel.className = 'mage-system-num';
         numLabel.textContent = 'System ' + cardNum;
 
-        const sel = document.createElement('select');
-        sel.className = 'occ-select';
-        sel.setAttribute('data-key', 'system');
-        [
-          ['', '— None / Independent —'],
-          ['Contracts', 'Contracts — Magic as agreement'],
-          ['Alchemy', 'Alchemy — Magic as transformation'],
-          ['Language', 'Language — Magic as word'],
-          ['Movements', 'Movements — Magic as action'],
-          ['Forging', 'Forging — Magic as making'],
-        ].forEach(([v, l]) => {
-          const o = document.createElement('option');
-          o.value = v; o.textContent = l; sel.appendChild(o);
-        });
-        sel.value = d.system || '';
+        const systemNameLabel = document.createElement('span');
+        systemNameLabel.style.cssText = 'font-family:var(--font-mono);font-size:0.65rem;color:var(--accent);letter-spacing:0.1em;';
+        systemNameLabel.textContent = d.system || 'Custom System';
 
         const rmBtn = document.createElement('button');
         rmBtn.className = 'mage-system-rm';
@@ -3319,7 +3419,7 @@
         });
 
         hdr.appendChild(numLabel);
-        hdr.appendChild(sel);
+        hdr.appendChild(systemNameLabel);
         hdr.appendChild(rmBtn);
         card.appendChild(hdr);
 
@@ -3391,8 +3491,13 @@
             rmR.className = 'restriction-remove-btn';
             rmR.textContent = '✕';
             rmR.addEventListener('click', () => {
-              sysRestrictions.splice(idx, 1);
-              refreshRestrictions();
+              openRemoveRestrDialog(() => {
+                sysRestrictions.splice(idx, 1);
+                refreshRestrictions();
+                // Lock add restriction behind training points
+                restrAddBtn.textContent = '+ Add (4pts)';
+                restrAddBtn.dataset.locked = 'true';
+              });
             });
             item.appendChild(inner);
             item.appendChild(rmR);
@@ -3412,6 +3517,13 @@
         }
 
         restrAddBtn.addEventListener('click', () => {
+          if (restrAddBtn.dataset.locked === 'true') {
+            if (trainingPool < 4) { toast('Not enough points — need 4 to add a new restriction', 'var(--red)'); return; }
+            trainingPool -= 4;
+            renderTrainingPool();
+            restrAddBtn.textContent = '+ Add';
+            delete restrAddBtn.dataset.locked;
+          }
           const val = restrInput.value.trim();
           if (!val) { restrInput.focus(); return; }
           sysRestrictions.push(val);
@@ -3422,37 +3534,9 @@
           if (e.key === 'Enter') restrAddBtn.click();
         });
 
-        // also wire roll backlash to use this system's count
-        const rollBtn = document.createElement('button');
-        rollBtn.className = 'backlash-roll-btn';
-        rollBtn.style.marginTop = '0.4rem';
-        rollBtn.id = 'bl-roll-' + id;
-        rollBtn.addEventListener('click', () => {
-          const count = sysRestrictions.length;
-          const die = getBacklashDie(count);
-          if (die === 'none') { toast('No backlash — fully restricted', 'var(--green)'); return; }
-          const sides = parseInt(die.replace('d',''), 10);
-          const roll = Math.ceil(Math.random() * sides);
-          const weightPips = document.querySelectorAll('.weight-pip.filled').length;
-          const rawWounds = Math.max(0, roll - weightPips);
-          let woundsDealt = 0;
-          if (rawWounds > 0) {
-            const boxes = [...document.querySelectorAll('#wpool-boxes .track-box')];
-            const empty = boxes.filter(b => !b.classList.contains('filled-wpool'));
-            woundsDealt = Math.min(rawWounds, empty.length);
-            empty.slice(0, woundsDealt).forEach(b => b.classList.add('filled-wpool'));
-            rebuildTracks();
-          }
-          rollBtn.textContent = 'Rolled ' + die + ' → ' + roll + (weightPips ? ' − ' + weightPips + 'W absorbed' : '') + (rawWounds > 0 ? ' → ' + woundsDealt + ' wound' + (woundsDealt !== 1 ? 's' : '') : ' → fully absorbed');
-          setTimeout(() => {
-            rollBtn.textContent = die === 'none' ? 'No backlash (4+ restrictions)' : 'Roll backlash (' + die + ')';
-          }, 3500);
-        });
-
         restrAddRow.appendChild(restrInput);
         restrAddRow.appendChild(restrAddBtn);
         restrSection.appendChild(restrAddRow);
-        restrSection.appendChild(rollBtn);
         card.appendChild(restrSection);
 
         // ── ABILITIES ──
@@ -3498,27 +3582,23 @@
         if (d.abilities && d.abilities.length) {
           d.abilities.forEach(ab => addAbility('mage-abil-' + id, 'mage', ab));
         }
-
-        // init roll button label
-        const initDie = getBacklashDie(sysRestrictions.length);
-        rollBtn.textContent = initDie === 'none' ? 'No backlash (4+ restrictions)' : 'Roll backlash (' + initDie + ')';
       }
 
       function serializeMageSystems() {
         const systems = [];
         document.querySelectorAll('.mage-system-card').forEach(card => {
-          const systemSel = card.querySelector('[data-key="system"]');
+          // System name is now a span label, not a select
+          const nameSpan = card.querySelector('.mage-system-num');
+          const systemNameEl = nameSpan ? nameSpan.nextElementSibling : null;
           const backlashTa = card.querySelector('[data-key="backlash"]');
           const abilList = card.querySelector('.additive-list');
           const restrList = card.querySelector('.restriction-list');
-          // restrictions
           const restrictions = [];
           if (restrList) {
             restrList.querySelectorAll('.restriction-item-text').forEach(el => {
               if (el.textContent.trim()) restrictions.push(el.textContent.trim());
             });
           }
-          // abilities
           const abilities = [];
           if (abilList) {
             abilList.querySelectorAll('.additive-item').forEach(item => {
@@ -3528,13 +3608,290 @@
             });
           }
           systems.push({
-            system: systemSel ? systemSel.value : '',
+            system: systemNameEl ? systemNameEl.textContent : '',
             restrictions,
             abilities,
             backlash: backlashTa ? backlashTa.value : '',
           });
         });
         return systems;
+      }
+
+      /* ══════════════════════════════════════════════
+         MAGE SYSTEM DIALOG
+      ══════════════════════════════════════════════ */
+      const GREAT_SYSTEM_RESTRICTIONS = {
+        'Contracts': ['Witnessed — the contract must be spoken aloud. Silent casting is void.','Reciprocal — every effect given must have something of equal weight taken.','Bound Duration — the effect lasts only as long as the mage holds the terms.','Named Party — the magic only works on or for a specific named target established at casting.'],
+        'Alchemy': ['Present Material — the mage must physically touch what they\'re transforming.','Natural State — you can only transform something toward a state it could naturally reach.','Gradual Shift — transformation happens in stages, not instantly.','Equivalent Mass — what you transform cannot gain or lose mass.'],
+        'Language': ['Spoken Aloud — the declaration must be voiced.','Precise Wording — the effect is exactly what was said, no more.','Cannot Recant — once declared, the mage cannot reverse their own statement.','Understood Tongue — the language used must be one the mage genuinely speaks.'],
+        'Movements': ['Unbroken Form — the stance or gesture must be held or completed without interruption.','No Repetition — the same movement cannot produce the same effect twice in a row.','Grounded — the mage must have contact with a surface.','Deliberate Pace — rushed movements produce diminished effects.'],
+        'Forging': ['Time Required — nothing can be Forged in combat or under duress.','Specific Material — each effect requires a particular material the mage has identified.','Single Intent — a Forged object can only hold one argument at a time.','Mage\'s Hand — only the mage who Forged an object can use its effect.'],
+      };
+
+      function openMageSystemDialog() {
+        mageDialogStep(1);
+        document.getElementById('mage-system-dialog').style.display = 'flex';
+      }
+      function closeMageSystemDialog() {
+        document.getElementById('mage-system-dialog').style.display = 'none';
+      }
+      function mageDialogStep(step, isGreat) {
+        document.getElementById('mage-step-1').style.display = step === 1 ? '' : 'none';
+        document.getElementById('mage-step-2a').style.display = (step === 2 && isGreat) ? '' : 'none';
+        document.getElementById('mage-step-2b').style.display = (step === 2 && !isGreat) ? '' : 'none';
+      }
+      function confirmGreatSystem() {
+        const sys = document.getElementById('great-system-select').value;
+        if (!sys) { toast('Please select a system', 'var(--red)'); return; }
+        const restrictions = GREAT_SYSTEM_RESTRICTIONS[sys] || [];
+        addMageSystem({ system: sys, restrictions });
+        closeMageSystemDialog();
+      }
+      function confirmCustomSystem() {
+        const name = document.getElementById('custom-system-name').value.trim();
+        if (!name) { toast('Please enter a system name', 'var(--red)'); return; }
+        const inputs = document.querySelectorAll('.custom-restr-input');
+        const restrictions = [...inputs].map(i => i.value.trim()).filter(Boolean);
+        if (restrictions.length < 4) { toast('Please fill in all 4 restrictions', 'var(--red)'); return; }
+        addMageSystem({ system: name, restrictions });
+        // clear inputs
+        document.getElementById('custom-system-name').value = '';
+        inputs.forEach(i => i.value = '');
+        closeMageSystemDialog();
+      }
+
+      /* ══════════════════════════════════════════════
+         REMOVE RESTRICTION DIALOG
+      ══════════════════════════════════════════════ */
+      let _pendingRestrRemove = null;
+
+      function openRemoveRestrDialog(onConfirm) {
+        _pendingRestrRemove = onConfirm;
+        document.getElementById('remove-restr-dialog').style.display = 'flex';
+      }
+      function closeRemoveRestrDialog() {
+        document.getElementById('remove-restr-dialog').style.display = 'none';
+        _pendingRestrRemove = null;
+      }
+      function confirmRemoveRestr() {
+        if (_pendingRestrRemove) _pendingRestrRemove();
+        closeRemoveRestrDialog();
+      }
+
+      /* ══════════════════════════════════════════════
+         META ABILITY DIALOG & CARDS
+      ══════════════════════════════════════════════ */
+      let metaAbilityCards = [];
+
+      function openMetaAbilityDialog() {
+        metaDialogStep(1);
+        document.getElementById('meta-ability-dialog').style.display = 'flex';
+      }
+      function closeMetaAbilityDialog() {
+        document.getElementById('meta-ability-dialog').style.display = 'none';
+      }
+      function metaDialogStep(step, type) {
+        document.getElementById('meta-step-1').style.display = step === 1 ? '' : 'none';
+        document.getElementById('meta-step-2-simple').style.display = (step === 2 && type === 'simple') ? '' : 'none';
+        document.getElementById('meta-step-2-complex').style.display = (step === 2 && type === 'complex') ? '' : 'none';
+      }
+      function confirmSimpleAbility() {
+        const name = document.getElementById('simple-ability-name').value.trim() || 'Simple Ability';
+        const stat = document.getElementById('simple-stat-select').value;
+        const tier = document.getElementById('simple-tier-select').value;
+        if (!stat || !tier) { toast('Please select a stat and tier', 'var(--red)'); return; }
+        renderMetaAbilityCard({ type: 'simple', name, stat, tier });
+        // Lock the stat
+        lockStatForMeta(stat, tier);
+        document.getElementById('simple-ability-name').value = '';
+        closeMetaAbilityDialog();
+      }
+      function confirmComplexAbility() {
+        const name = document.getElementById('complex-ability-name').value.trim() || 'Complex Ability';
+        const desc = document.getElementById('complex-ability-desc').value.trim();
+        renderMetaAbilityCard({ type: 'complex', name, desc, skills: [] });
+        document.getElementById('complex-ability-name').value = '';
+        document.getElementById('complex-ability-desc').value = '';
+        closeMetaAbilityDialog();
+      }
+
+      function lockStatForMeta(stat, tier) {
+        const sel = document.getElementById('stat-' + stat);
+        if (!sel) return;
+        sel.value = tier;
+        sel.disabled = true;
+        sel.style.opacity = '0.6';
+        const btn = document.getElementById('tp-spend-' + stat);
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+        const lockNote = document.getElementById('lock-' + stat);
+        if (lockNote) { lockNote.textContent = '🔒 meta locked'; lockNote.classList.add('unlocked'); }
+        if (stat === 'vigor') updateVigordependent();
+        else if (stat === 'fortitude') onFortChange();
+        else updateStatDie(stat);
+      }
+
+      function unlockStatFromMeta(stat) {
+        const sel = document.getElementById('stat-' + stat);
+        if (!sel) return;
+        sel.disabled = false;
+        sel.style.opacity = '';
+        const btn = document.getElementById('tp-spend-' + stat);
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+        const lockNote = document.getElementById('lock-' + stat);
+        if (lockNote) { lockNote.textContent = ''; lockNote.classList.remove('unlocked'); }
+      }
+
+      function renderMetaAbilityCard(data) {
+        const container = document.getElementById('meta-ability-cards');
+        const id = uid();
+        const card = document.createElement('div');
+        card.className = 'mage-system-card';
+        card.id = 'meta-card-' + id;
+        card.dataset.type = data.type;
+        if (data.type === 'simple') card.dataset.stat = data.stat;
+
+        // Header
+        const hdr = document.createElement('div');
+        hdr.className = 'mage-system-card-header';
+        const nameEl = document.createElement('span');
+        nameEl.className = 'mage-system-num';
+        nameEl.textContent = data.name;
+        const typeBadge = document.createElement('span');
+        typeBadge.style.cssText = 'font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.1em;color:var(--purple);border:1px solid var(--purple);padding:1px 6px;margin-left:0.5rem;';
+        typeBadge.textContent = data.type.toUpperCase();
+        const rmBtn = document.createElement('button');
+        rmBtn.className = 'mage-system-rm';
+        rmBtn.textContent = '✕';
+        rmBtn.addEventListener('click', () => {
+          if (data.type === 'simple') unlockStatFromMeta(data.stat);
+          card.remove();
+        });
+        hdr.appendChild(nameEl);
+        hdr.appendChild(typeBadge);
+        hdr.appendChild(rmBtn);
+        card.appendChild(hdr);
+
+        if (data.type === 'simple') {
+          // Simple — show locked stat info
+          const info = document.createElement('div');
+          info.style.cssText = 'font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);padding:0.5rem 0;letter-spacing:0.08em;';
+          info.textContent = '🔒 ' + data.stat.charAt(0).toUpperCase() + data.stat.slice(1) + ' locked at ' + data.tier.charAt(0).toUpperCase() + data.tier.slice(1);
+          card.appendChild(info);
+        } else {
+          // Complex — description + skills
+          if (data.desc) {
+            const descEl = document.createElement('div');
+            descEl.style.cssText = 'font-family:var(--font-body);font-size:0.82rem;color:var(--text-dim);padding:0.5rem 0 0.75rem;line-height:1.6;';
+            descEl.textContent = data.desc;
+            card.appendChild(descEl);
+          }
+
+          // Skills section
+          const skillTitle = document.createElement('div');
+          skillTitle.className = 'meta-panel-title';
+          skillTitle.style.marginBottom = '0.4rem';
+          skillTitle.textContent = 'Skills';
+          card.appendChild(skillTitle);
+
+          const skillList = document.createElement('div');
+          skillList.className = 'restriction-list';
+          skillList.id = 'meta-skills-' + id;
+          card.appendChild(skillList);
+
+          const skillAddRow = document.createElement('div');
+          skillAddRow.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-top:0.4rem;';
+
+          const skillCostNote = document.createElement('span');
+          skillCostNote.style.cssText = 'font-family:var(--font-mono);font-size:0.55rem;color:var(--text-muted);';
+          skillCostNote.textContent = '3 pts to unlock';
+
+          const skillAddBtn = document.createElement('button');
+          skillAddBtn.className = 'tab-train-spend-btn';
+          skillAddBtn.style.cssText = 'border-color:var(--purple);color:var(--purple);';
+          skillAddBtn.textContent = '+ Unlock Skill';
+          skillAddBtn.addEventListener('click', () => {
+            if (trainingPool < 3) { toast('Not enough points — need 3', 'var(--red)'); return; }
+            trainingPool -= 3;
+            renderTrainingPool();
+            addMetaSkillRow(skillList);
+            toast('Meta skill unlocked!', 'var(--purple)');
+          });
+
+          // Restore saved skills
+          if (data.skills && data.skills.length) {
+            data.skills.forEach(s => addMetaSkillRow(skillList, s));
+          }
+
+          skillAddRow.appendChild(skillCostNote);
+          skillAddRow.appendChild(skillAddBtn);
+          card.appendChild(skillAddRow);
+        }
+
+        container.appendChild(card);
+      }
+
+      function addMetaSkillRow(container, data) {
+        const row = document.createElement('div');
+        row.className = 'restriction-item';
+        row.style.flexDirection = 'column';
+        row.style.alignItems = 'stretch';
+        row.style.gap = '0.3rem';
+
+        const topRow = document.createElement('div');
+        topRow.style.cssText = 'display:flex;align-items:center;gap:0.5rem;';
+
+        const nameInput = document.createElement('input');
+        nameInput.className = 'restriction-input';
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Skill name…';
+        nameInput.value = data ? (data.name || '') : '';
+        nameInput.dataset.key = 'skillName';
+
+        const fatLabel = document.createElement('span');
+        fatLabel.style.cssText = 'font-family:var(--font-mono);font-size:0.55rem;color:var(--text-muted);white-space:nowrap;';
+        fatLabel.textContent = 'Fatigue:';
+
+        const fatInput = document.createElement('input');
+        fatInput.type = 'number';
+        fatInput.min = '0';
+        fatInput.value = data ? (data.fatigue || 0) : 0;
+        fatInput.dataset.key = 'skillFatigue';
+        fatInput.style.cssText = 'width:48px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:0.7rem;padding:2px 4px;text-align:center;';
+
+        const rmBtn = document.createElement('button');
+        rmBtn.className = 'restriction-remove-btn';
+        rmBtn.textContent = '✕';
+        rmBtn.addEventListener('click', () => row.remove());
+
+        topRow.appendChild(nameInput);
+        topRow.appendChild(fatLabel);
+        topRow.appendChild(fatInput);
+        topRow.appendChild(rmBtn);
+        row.appendChild(topRow);
+        container.appendChild(row);
+      }
+
+      /* ── Serialize meta ability cards ── */
+      function serializeMetaAbilities() {
+        const cards = [];
+        document.querySelectorAll('#meta-ability-cards .mage-system-card').forEach(card => {
+          const type = card.dataset.type;
+          const name = card.querySelector('.mage-system-num')?.textContent || '';
+          if (type === 'simple') {
+            cards.push({ type, name, stat: card.dataset.stat });
+          } else {
+            const desc = card.querySelector('[style*="font-body"]')?.textContent || '';
+            const skills = [];
+            card.querySelectorAll('#meta-skills-' + card.id.replace('meta-card-', '') + ' .restriction-item').forEach(row => {
+              skills.push({
+                name: row.querySelector('[data-key="skillName"]')?.value || '',
+                fatigue: row.querySelector('[data-key="skillFatigue"]')?.value || '0',
+              });
+            });
+            cards.push({ type, name, desc, skills });
+          }
+        });
+        return cards;
       }
 
             /* ── IMPORT FROM ITEM LIBRARY ── */
@@ -3555,10 +3912,11 @@
         });
       }
 
-            function changeBoostCount(delta) { boostCount = Math.max(1, boostCount + delta); document.getElementById('boost-count-val').textContent = boostCount; renderBoostSlots(); updateAllStatOptions(); }
+            function changeBoostCount(delta) { boostCount = Math.max(1, boostCount + delta); const bcv = document.getElementById('boost-count-val'); if (bcv) bcv.textContent = boostCount; renderBoostSlots(); updateAllStatOptions(); }
 
       function renderBoostSlots(slotData) {
         const container = document.getElementById('boost-slots-container');
+        if (!container) return;
         while (container.children.length > boostCount) container.lastElementChild.remove();
         while (container.children.length < boostCount) { addBoostSlot(container.children.length, slotData ? slotData[container.children.length] : null); }
         updateAllStatOptions();
@@ -3566,6 +3924,7 @@
 
       function addBoostSlot(idx, data) {
         const container = document.getElementById('boost-slots-container');
+        if (!container) return;
         const slotId = uid(), pipsId = uid(), labelId = uid();
         const div = document.createElement('div');
         div.className = 'boost-slot'; div.id = slotId;
@@ -3604,21 +3963,16 @@
       function buildWeightPips(filled) {
         const c = document.getElementById('weight-pips');
         c.innerHTML = '';
-        for (let i = 0; i < 10; i++) {
+        const rank = Math.min(5, filled || 0);
+        for (let i = 0; i < 5; i++) {
           const pip = document.createElement('div');
-          pip.className = 'weight-pip' + (filled && i < filled ? ' filled' : '');
-          pip.onclick = (function(idx) {
-            return function() {
-              const pips = document.querySelectorAll('.weight-pip');
-              const cf = document.querySelectorAll('.weight-pip.filled').length;
-              const nf = idx + 1 === cf ? 0 : idx + 1;
-              pips.forEach((p, j) => p.classList.toggle('filled', j < nf));
-              document.getElementById('weight-label').textContent = 'Weight: ' + nf + ' / 10';
-            };
-          })(i);
+          pip.className = 'weight-pip' + (i < rank ? ' filled' : '');
           c.appendChild(pip);
         }
-        document.getElementById('weight-label').textContent = 'Weight: ' + (filled || 0) + ' / 10';
+        const rv = document.getElementById('mw-rank-val');
+        if (rv) rv.textContent = rank;
+        document.getElementById('weight-label').textContent = 'Weight: ' + rank + ' / 5';
+        updateMWSpendBtn();
       }
 
       /* ══════════════════════════════════════════════
@@ -3662,83 +4016,7 @@
          SAVE / LOAD
       ══════════════════════════════════════════════ */
       const STORAGE_KEY = 'nexus-sheet-slot-';
-      const OBR_META_KEY = 'com.nexus/sheet-data';
       let activeSlot = 0;
-      let __obrAvailable = false;
-
-      /* ── OBR INIT ── called after ESM module loads */
-      function initOBR() {
-        if (typeof window.OBR === 'undefined') return;
-        const OBR = window.OBR;
-        OBR.onReady(async () => {
-          __obrAvailable = true;
-          window.__OBR_READY = true;
-          window.__OBR_CALLBACKS.forEach(cb => { try { cb(); } catch(e) {} });
-          window.__OBR_CALLBACKS = [];
-
-          /* Apply OBR theme */
-          try {
-            const theme = await OBR.theme.getTheme();
-            applyOBRTheme(theme.mode);
-            OBR.theme.onChange(t => applyOBRTheme(t.mode));
-          } catch(e) {}
-
-          /* Load saved data from OBR player metadata */
-          try {
-            const meta = await OBR.player.getMetadata();
-            const savedSlots = meta[OBR_META_KEY];
-            if (savedSlots) {
-              /* Store into localStorage as cache */
-              try {
-                Object.keys(savedSlots).forEach(k => {
-                  /* skip non-slot metadata keys */
-                  if (k === 'last-active' || k === 'count') return;
-                  const val = savedSlots[k];
-                  if (!val || (typeof val === 'string' && val.trim() === '')) return;
-                  localStorage.setItem(STORAGE_KEY + k,
-                    typeof val === 'string' ? val : JSON.stringify(val));
-                });
-              } catch(e) {}
-              /* Auto-load last active slot */
-              const lastSlot = parseInt(savedSlots['last-active'] || '0', 10);
-              const slotRaw = savedSlots[String(lastSlot)]; /* keys are always strings */
-              if (slotRaw && slotRaw !== '') {
-                try {
-                  const data = typeof slotRaw === 'string' ? JSON.parse(slotRaw) : slotRaw;
-                  if (data && data.charname !== undefined) {
-                    activeSlot = lastSlot;
-                    deserializeSheet(data);
-                    refreshSlotLabels();
-                  }
-                } catch(parseErr) { console.warn('NEXUS: slot parse failed', parseErr); }
-              }
-            }
-          } catch(e) { console.warn('NEXUS: OBR metadata load failed', e); }
-        });
-      }
-
-      function applyOBRTheme(mode) {
-        document.body.setAttribute('data-obr-theme', mode === 'LIGHT' ? 'light' : 'dark');
-      }
-
-      /* ── STORAGE ABSTRACTION ── OBR metadata preferred, localStorage fallback ── */
-      async function _obrSaveAllSlots() {
-        if (!__obrAvailable || typeof window.OBR === 'undefined') return;
-        try {
-          const slotCount = getSlotCount();
-          const payload = { 'last-active': String(activeSlot) };
-          for (let i = 0; i < slotCount + 3; i++) {
-            const raw = localStorage.getItem(STORAGE_KEY + i);
-            if (raw && raw.trim() !== '') payload[String(i)] = raw; /* string keys */
-          }
-          payload['count'] = String(slotCount);
-          await window.OBR.player.setMetadata({ [OBR_META_KEY]: payload });
-        } catch(e) { console.warn('NEXUS: OBR metadata save failed', e); }
-      }
-
-      function showSupport() {
-        document.getElementById('support-modal').style.display = 'flex';
-      }
 
       function toast(msg, color) {
         const t = document.getElementById('save-toast');
@@ -3757,9 +4035,9 @@
         data.occupation = document.getElementById('occ-select').value;
         data.stats = {};
         allStats.forEach(s => { data.stats[s] = document.getElementById('stat-' + s).value; });
-        data.trainingPoints = { ...trainingPoints };
-        data.meTrainingPoints = meTrainingPoints;
-        data.mwTrainingPoints = mwTrainingPoints;
+        data.trainingPool = trainingPool;
+        data.mwRank = getMWRank();
+        data.mageWeight = getMWRank(); // keep legacy key in sync
         data.metaTypes = [...activeTypes];
         data.mindsEye = currentMindsEye;
         data.mageWeight = document.querySelectorAll('.weight-pip.filled').length;
@@ -3768,10 +4046,10 @@
         data.mageBacklash = ''; // legacy
         data.mageSystems = serializeMageSystems();
         data.psionEthics = document.getElementById('psion-ethics').value;
-        data.psionPassive = document.getElementById('psion-passive').value;
+        data.psionPassive = ''; // legacy — passive abilities are now auto-rendered by stage
         data.psionSmoke = document.getElementById('psion-smoke').value;
-        data.metaDef = document.getElementById('meta-definition').value;
-        data.metaFatigue = document.getElementById('meta-fatigue-notes').value;
+        data.metaDef = document.getElementById('meta-definition')?.value || '';
+        data.metaFatigue = document.getElementById('meta-fatigue-notes')?.value || '';
         data.boostCount = boostCount;
         data.boosts = [];
         document.querySelectorAll('#boost-slots-container .boost-slot').forEach(slot => {
@@ -3788,7 +4066,7 @@
         };
         data.mageAbilities = []; // legacy — now per-system
         data.psionAbilities = serList('psion-ability-list');
-        data.metaAbilities = serList('meta-ability-list');
+        data.metaAbilities = serializeMetaAbilities();
         data.actions = [];
         document.querySelectorAll('#actions-list .additive-item').forEach(item => {
           const obj = {};
@@ -3856,9 +4134,9 @@
         updateVigordependent();
         ['might','expertise','wit','insight','intuition','charm'].forEach(updateStatDie);
 
-        allStats.forEach(s => trainingPoints[s] = (data.trainingPoints && data.trainingPoints[s]) || 0);
-        meTrainingPoints = (data.meTrainingPoints) || 0;
-        mwTrainingPoints = (data.mwTrainingPoints) || 0;
+        trainingPool = data.trainingPool || 0;
+        // Restore MW rank
+        if (data.mwRank) { const rv = document.getElementById('mw-rank-val'); if (rv) rv.textContent = data.mwRank; }
 
         activeTypes.clear();
         if (data.metaTypes && Array.isArray(data.metaTypes)) data.metaTypes.forEach(t => activeTypes.add(t));
@@ -3880,24 +4158,33 @@
           addMageSystem({ system: data.mageSystem || '', abilities: data.mageAbilities || [], backlash: data.mageBacklash || '' });
         } else {
           document.getElementById('mage-systems-list').innerHTML = '';
-          if (!document.querySelector('.mage-system-card')) addMageSystem();
         }
         if (data.mindsEye) setMindsEye(data.mindsEye);
+        else renderPassiveAbilities();
         document.getElementById('psion-ethics').value = data.psionEthics || '';
-        document.getElementById('psion-passive').value = data.psionPassive || '';
+        // psionPassive is now auto-rendered via renderPassiveAbilities() — no restore needed
         document.getElementById('psion-smoke').value = data.psionSmoke || '';
-        document.getElementById('meta-definition').value = data.metaDef || '';
-        document.getElementById('meta-fatigue-notes').value = data.metaFatigue || '';
+        const metaDefEl = document.getElementById('meta-definition');
+        if (metaDefEl) metaDefEl.value = data.metaDef || '';
+        const metaFatEl = document.getElementById('meta-fatigue-notes');
+        if (metaFatEl) metaFatEl.value = data.metaFatigue || '';
         boostCount = data.boostCount || 1;
-        document.getElementById('boost-count-val').textContent = boostCount;
-        document.getElementById('boost-slots-container').innerHTML = '';
+        const bcv = document.getElementById('boost-count-val');
+        if (bcv) bcv.textContent = boostCount;
+        const bsc = document.getElementById('boost-slots-container');
+        if (bsc) bsc.innerHTML = '';
         renderBoostSlots(data.boosts || []);
-        document.getElementById('mage-ability-list').innerHTML = '';
+        const mageAbilEl = document.getElementById('mage-ability-list');
+        if (mageAbilEl) mageAbilEl.innerHTML = '';
         document.getElementById('psion-ability-list').innerHTML = '';
-        document.getElementById('meta-ability-list').innerHTML = '';
+        document.getElementById('meta-ability-cards').innerHTML = '';
         // mageAbilities handled per-system
         (data.psionAbilities || []).forEach(d => addAbility('psion-ability-list', 'psion', d));
-        (data.metaAbilities || []).forEach(d => addAbility('meta-ability-list', 'meta', d));
+        // Restore meta ability cards
+        (data.metaAbilities || []).forEach(d => {
+          renderMetaAbilityCard(d);
+          if (d.type === 'simple' && d.stat && d.tier) lockStatForMeta(d.stat, d.tier);
+        });
         document.getElementById('actions-list').innerHTML = '';
         (data.actions || []).forEach(d => addAction(d));
         document.getElementById('inventory-list').innerHTML = '';
@@ -3949,11 +4236,8 @@
       }
 
       function getSlotData(n) {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY + n);
-          if (!raw || raw.trim() === '') return null;
-          return JSON.parse(raw);
-        } catch (e) { return null; }
+        try { const raw = localStorage.getItem(STORAGE_KEY + n); return raw ? JSON.parse(raw) : null; }
+        catch (e) { return null; }
       }
 
       function refreshSlotLabels() {
@@ -4010,12 +4294,9 @@
           activeSlot = n;
           const data = serializeSheet();
           localStorage.setItem(STORAGE_KEY + n, JSON.stringify(data));
-          localStorage.setItem('nexus-last-active-slot', String(n));
           refreshSlotLabels();
           renderSlotsModal();
           toast('Saved to slot ' + (n + 1) + ' — ' + (data.charname || 'Unnamed'));
-          /* Push to OBR player metadata (async, non-blocking) */
-          _obrSaveAllSlots();
         } catch (e) { toast('Save failed — storage may be full', 'var(--red)'); }
       }
 
@@ -4030,7 +4311,7 @@
           localStorage.removeItem(STORAGE_KEY + n);
           if (n === activeSlot) {
             customTraits = []; occTraitStates = {}; mageRestrictions = [];
-            meTrainingPoints = 0; mwTrainingPoints = 0;
+            trainingPool = 0; renderTrainingPool();
             deserializeSheet({}); document.getElementById('f-charname').value = '';
           }
           refreshSlotLabels(); renderSlotsModal();
@@ -4163,43 +4444,174 @@ function importJSON(fileInputOrFile) {
       })();
 
       /* ── Auto-load last saved slot on open ── */
-      /* OBR path: handled by initOBR() after OBR.onReady fires */
-      /* Non-OBR path: load from localStorage immediately */
       (function() {
-        /* Short delay to let OBR SDK initialise if present */
-        setTimeout(function() {
-          if (__obrAvailable) return; /* OBR handled it */
-          try {
-            const lastSlot = parseInt(localStorage.getItem('nexus-last-active-slot') || '0', 10);
-            const data = getSlotData(lastSlot); /* already guards empty strings */
-            if (data && data.charname !== undefined) {
-              activeSlot = lastSlot;
-              deserializeSheet(data);
-              refreshSlotLabels();
-            }
-          } catch(e) { /* no saved data, start fresh */ }
-        }, 600);
+        try {
+          /* remember which slot was active across sessions */
+          const lastSlot = parseInt(localStorage.getItem('nexus-last-active-slot') || '0', 10);
+          const data = getSlotData(lastSlot);
+          if (data && data.charname !== undefined) {
+            activeSlot = lastSlot;
+            deserializeSheet(data);
+          }
+        } catch(e) { /* no saved data, start fresh */ }
       })();
 
-      /* nexus-last-active-slot now set in saveToSlot directly */
+      /* ── Persist active slot index whenever save happens ── */
+      const _origSaveToSlot = saveToSlot;
+      saveToSlot = function(n) {
+        _origSaveToSlot(n);
+        try { localStorage.setItem('nexus-last-active-slot', String(n)); } catch(e) {}
+      };
 
       buildWeightPips(0);
       rebuildTracks();
-      // ensure at least one mage system card exists
-      if (!document.querySelector('.mage-system-card')) addMageSystem();
       ['might','expertise','wit','insight','intuition','charm'].forEach(updateStatDie);
       renderBoostSlots();
       updateAllStatOptions();
       updateTypeSummary();
       refreshSlotLabels();
-      renderTrainingPools();
-      renderMeTraining();
-      renderMwTraining();
+      renderTrainingPool();
       ['poison','blinded','hypnotized'].forEach(e => renderStatusEffect(e));
       renderCustomTraits();
       updateBacklashPanel();
     </script>
+  <!-- Mage System Dialog -->
+  <div class="modal-overlay" id="mage-system-dialog" style="display:none;" onclick="if(event.target===this)closeMageSystemDialog()">
+    <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">
+      <div class="slots-modal-header">
+        <span class="slots-modal-title" id="mage-dialog-title">Add Magic System</span>
+        <button onclick="closeMageSystemDialog()" style="background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:1.25rem;">
+        <!-- Step 1: Great System question -->
+        <div id="mage-step-1">
+          <div style="font-family:var(--font-body);font-size:0.95rem;color:var(--text);margin-bottom:1.25rem;line-height:1.6;">
+            Are you a follower of one of the Great Systems?
+          </div>
+          <div style="display:flex;gap:0.75rem;">
+            <button class="add-btn add-accent" style="flex:1;" onclick="mageDialogStep(2, true)">Yes</button>
+            <button class="add-btn" style="flex:1;background:var(--surface2);border-color:var(--border);color:var(--text);" onclick="mageDialogStep(2, false)">No</button>
+          </div>
+        </div>
+        <!-- Step 2a: Choose Great System -->
+        <div id="mage-step-2a" style="display:none;">
+          <div class="meta-panel-title" style="margin-bottom:0.6rem;">Choose your system</div>
+          <select id="great-system-select" class="training-stat-select" style="margin-bottom:1rem;">
+            <option value="">— Select a system —</option>
+            <option value="Contracts">Contracts</option>
+            <option value="Alchemy">Alchemy</option>
+            <option value="Language">Language</option>
+            <option value="Movements">Movements</option>
+            <option value="Forging">Forging</option>
+          </select>
+          <div style="display:flex;gap:0.75rem;">
+            <button class="add-btn" style="flex:1;background:var(--surface2);border-color:var(--border);color:var(--text);" onclick="mageDialogStep(1)">Back</button>
+            <button class="add-btn add-accent" style="flex:1;" onclick="confirmGreatSystem()">Confirm</button>
+          </div>
+        </div>
+        <!-- Step 2b: Custom system -->
+        <div id="mage-step-2b" style="display:none;">
+          <div class="meta-panel-title" style="margin-bottom:0.4rem;">System name</div>
+          <input id="custom-system-name" type="text" class="trait-add-input" placeholder="Name your system…" style="width:100%;margin-bottom:1rem;">
+          <div class="meta-panel-title" style="margin-bottom:0.4rem;">Restrictions (4 required)</div>
+          <div style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1rem;">
+            <input class="custom-restr-input trait-add-input" placeholder="Restriction 1…">
+            <input class="custom-restr-input trait-add-input" placeholder="Restriction 2…">
+            <input class="custom-restr-input trait-add-input" placeholder="Restriction 3…">
+            <input class="custom-restr-input trait-add-input" placeholder="Restriction 4…">
+          </div>
+          <div style="display:flex;gap:0.75rem;">
+            <button class="add-btn" style="flex:1;background:var(--surface2);border-color:var(--border);color:var(--text);" onclick="mageDialogStep(1)">Back</button>
+            <button class="add-btn add-accent" style="flex:1;" onclick="confirmCustomSystem()">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meta Ability Dialog -->
+  <div class="modal-overlay" id="meta-ability-dialog" style="display:none;" onclick="if(event.target===this)closeMetaAbilityDialog()">
+    <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">
+      <div class="slots-modal-header">
+        <span class="slots-modal-title">Add Meta Ability</span>
+        <button onclick="closeMetaAbilityDialog()" style="background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:1.25rem;">
+        <!-- Step 1: Simple or Complex -->
+        <div id="meta-step-1">
+          <div style="font-family:var(--font-body);font-size:0.95rem;color:var(--text);margin-bottom:1.25rem;line-height:1.6;">
+            What type of Meta ability is this?
+          </div>
+          <div style="display:flex;gap:0.75rem;">
+            <button class="add-btn add-purple" style="flex:1;" onclick="metaDialogStep(2, 'simple')">Simple<span style="display:block;font-size:0.6rem;opacity:0.7;margin-top:2px;">Stat lock</span></button>
+            <button class="add-btn add-purple" style="flex:1;" onclick="metaDialogStep(2, 'complex')">Complex<span style="display:block;font-size:0.6rem;opacity:0.7;margin-top:2px;">Full ability</span></button>
+          </div>
+        </div>
+        <!-- Step 2: Simple -->
+        <div id="meta-step-2-simple" style="display:none;">
+          <div class="meta-panel-title" style="margin-bottom:0.4rem;">Ability name</div>
+          <input id="simple-ability-name" type="text" class="trait-add-input" placeholder="Name this ability…" style="width:100%;margin-bottom:0.75rem;">
+          <div class="meta-panel-title" style="margin-bottom:0.4rem;">Locked stat</div>
+          <select id="simple-stat-select" class="training-stat-select" style="margin-bottom:0.75rem;">
+            <option value="vigor">Vigor</option>
+            <option value="fortitude">Fortitude</option>
+            <option value="might">Might</option>
+            <option value="expertise">Expertise</option>
+            <option value="wit">Wit</option>
+            <option value="insight">Insight</option>
+            <option value="intuition">Intuition</option>
+            <option value="charm">Charm</option>
+          </select>
+          <div class="meta-panel-title" style="margin-bottom:0.4rem;">Locked tier</div>
+          <select id="simple-tier-select" class="training-stat-select" style="margin-bottom:1rem;">
+            <option value="deficient">Deficient</option>
+            <option value="average">Average</option>
+            <option value="capable">Capable</option>
+            <option value="proficient">Proficient</option>
+            <option value="expert">Expert</option>
+            <option value="master">Master</option>
+            <option value="enhanced">Enhanced</option>
+            <option value="remarkable">Remarkable</option>
+            <option value="extraordinary">Extraordinary</option>
+            <option value="legendary">Legendary</option>
+          </select>
+          <div style="display:flex;gap:0.75rem;">
+            <button class="add-btn" style="flex:1;background:var(--surface2);border-color:var(--border);color:var(--text);" onclick="metaDialogStep(1)">Back</button>
+            <button class="add-btn add-purple" style="flex:1;" onclick="confirmSimpleAbility()">Add Ability</button>
+          </div>
+        </div>
+        <!-- Step 2: Complex -->
+        <div id="meta-step-2-complex" style="display:none;">
+          <div class="meta-panel-title" style="margin-bottom:0.4rem;">Ability name</div>
+          <input id="complex-ability-name" type="text" class="trait-add-input" placeholder="Name this ability…" style="width:100%;margin-bottom:0.75rem;">
+          <div class="meta-panel-title" style="margin-bottom:0.4rem;">Description</div>
+          <textarea id="complex-ability-desc" class="meta-textarea" placeholder="Describe what this ability does…" style="margin-bottom:1rem;min-height:80px;"></textarea>
+          <div style="display:flex;gap:0.75rem;">
+            <button class="add-btn" style="flex:1;background:var(--surface2);border-color:var(--border);color:var(--text);" onclick="metaDialogStep(1)">Back</button>
+            <button class="add-btn add-purple" style="flex:1;" onclick="confirmComplexAbility()">Add Ability</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Remove Restriction Dialog -->
+  <div class="modal-overlay" id="remove-restr-dialog" style="display:none;">
+    <div style="background:var(--surface);border:1px solid var(--border);width:100%;max-width:380px;">
+      <div class="slots-modal-header">
+        <span class="slots-modal-title">Remove Restriction</span>
+      </div>
+      <div style="padding:1.25rem;">
+        <div style="font-family:var(--font-body);font-size:0.92rem;color:var(--text);margin-bottom:1rem;line-height:1.6;">
+          Are you sure? Removing this restriction shatters the chain. To add a new restriction afterwards will cost <strong style="color:var(--accent);">4 training points</strong>.
+        </div>
+        <div style="display:flex;gap:0.75rem;">
+          <button class="add-btn" style="flex:1;background:var(--surface2);border-color:var(--border);color:var(--text);" onclick="closeRemoveRestrDialog()">Cancel</button>
+          <button class="add-btn" style="flex:1;background:none;border-color:var(--red);color:var(--red);" onclick="confirmRemoveRestr()">Remove</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   </body>
 </html>
-
-
