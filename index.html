@@ -40,84 +40,6 @@
     --font-fell: 'IM Fell English', serif;
   }
 
-  body.light-mode {
-    --bg: #f4f1eb;
-    --surface: #fffdf8;
-    --surface2: #f0ede6;
-    --surface3: #e8e4db;
-    --border: #d4cfc4;
-    --border-bright: #b8b2a4;
-    --text: #1a1810;
-    --text-dim: #4a4438;
-    --text-muted: #8a8070;
-    --ice: #3a7a96;
-    --ice-dim: rgba(58,122,150,0.12);
-    --ice-glow: rgba(58,122,150,0.06);
-    --gold: #8a6a1c;
-    --gold-dim: rgba(138,106,28,0.12);
-    --gold-glow: rgba(138,106,28,0.06);
-    --mage: #2e7a50;
-    --mage-dim: rgba(46,122,80,0.12);
-    --psion: #6040a0;
-    --psion-dim: rgba(96,64,160,0.12);
-    --meta: #b05820;
-    --meta-dim: rgba(176,88,32,0.12);
-    --red: #a03028;
-    --red-dim: rgba(160,48,40,0.12);
-    --rule: rgba(58,122,150,0.15);
-    --rule-gold: rgba(138,106,28,0.18);
-  }
-  body.light-mode::before { opacity: 0.015; }
-
-  .theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.6rem;
-    margin: 0 1rem 1rem;
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    font-family: var(--font-ui);
-    font-size: 0.65rem;
-    font-weight: 500;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: calc(100% - 2rem);
-  }
-  .theme-toggle:hover { border-color: var(--border-bright); color: var(--text); }
-  .theme-toggle-icon { font-size: 0.75rem; }
-
-  .splash-theme-btn {
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
-    z-index: 2;
-    background: none;
-    border: 1px solid rgba(168,216,234,0.25);
-    color: rgba(168,216,234,0.6);
-    font-family: var(--font-ui);
-    font-size: 0.63rem;
-    font-weight: 500;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    padding: 0.4rem 0.9rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    transition: all 0.2s;
-  }
-  .splash-theme-btn:hover {
-    border-color: rgba(168,216,234,0.5);
-    color: var(--ice);
-  }
-  body.light-mode .splash-theme-btn {
-    border-color: rgba(58,122,150,0.3);
-    color: rgba(58,122,150,0.7);
-  }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -1362,8 +1284,10 @@ body.sheet-mode #sheet-tab { display: block !important; margin-left: 0; }
 /* Sheet floating nav button */
 .sheet-nav-btn {
   position: fixed;
-  top: 1rem;
-  left: 1rem;
+  bottom: 2rem;
+  left: 5rem;
+  top: auto;
+  right: auto;
   z-index: 500;
   display: none;
   background: var(--surface);
@@ -1377,15 +1301,17 @@ body.sheet-mode #sheet-tab { display: block !important; margin-left: 0; }
   cursor: pointer;
   transition: all 0.2s;
 }
-.sheet-nav-btn:hover { background: var(--ice-dim); }
+.sheet-nav-btn:hover { background: var(--surface2); border-color: var(--ice); color: var(--ice); }
 body.sheet-mode .sheet-nav-btn { display: block; }
 
 /* Sheet switcher panel */
 .sheet-switcher-panel {
   display: none;
   position: fixed;
-  top: 3rem;
-  left: 1rem;
+  bottom: 5rem;
+  left: 5rem;
+  top: auto;
+  right: auto;
   z-index: 499;
   background: var(--surface);
   border: 1px solid var(--border-bright);
@@ -2096,6 +2022,315 @@ body.sheet-mode .sheet-nav-btn { display: block; }
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  /* ── SETTINGS PANEL ── */
+  .settings-gear {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    width: 40px;
+    height: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  .settings-gear:hover { border-color: var(--ice); color: var(--ice); }
+
+  .settings-panel {
+    position: fixed;
+    bottom: 5rem;
+    left: 2rem;
+    width: 280px;
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    z-index: 9001;
+    padding: 1.25rem 1.5rem;
+    display: none;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+  .settings-panel.open { display: flex; }
+
+  .settings-panel-title {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ice);
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 0;
+  }
+
+  .settings-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .settings-label {
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .settings-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: var(--border-bright);
+    outline: none;
+    cursor: pointer;
+  }
+  .settings-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--ice);
+    cursor: pointer;
+    border-radius: 0;
+  }
+  .settings-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--ice);
+    cursor: pointer;
+    border-radius: 0;
+    border: none;
+  }
+  .settings-size-display {
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    color: var(--ice);
+    text-align: right;
+    letter-spacing: 0.1em;
+  }
+  .settings-swatches {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .settings-swatch {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s, transform 0.15s;
+    border-radius: 2px;
+  }
+  .settings-swatch:hover { transform: scale(1.15); }
+  .settings-swatch.active { border-color: var(--text); }
+  .settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .settings-toggle-btn {
+    background: none;
+    border: 1px solid var(--border-bright);
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .settings-toggle-btn:hover,
+  .settings-toggle-btn.active { border-color: var(--ice); color: var(--ice); background: var(--ice-dim); }
+  .settings-reset {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 0.35rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+  .settings-reset:hover { border-color: var(--red); color: var(--red); }
+
+  /* High contrast mode */
+  body.high-contrast {
+    --text: #ffffff;
+    --text-dim: #dddddd;
+    --text-muted: #aaaaaa;
+    --border: #333355;
+    --border-bright: #555580;
+    --surface: #080818;
+    --surface2: #0c0c20;
+  }
+  body.high-contrast.light-mode {
+    --text: #000000;
+    --text-dim: #222222;
+    --text-muted: #555555;
+    --border: #999988;
+    --border-bright: #777766;
+    --surface: #ffffff;
+    --surface2: #f5f5ee;
+  }
+  /* ── COLOUR MODAL ── */
+  .color-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 99000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .color-modal {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    width: 100%;
+    max-width: 560px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .color-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .color-modal-title {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ice);
+  }
+  .color-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    transition: color 0.15s;
+  }
+  .color-modal-close:hover { color: var(--red); }
+  .color-modal-presets {
+    padding: 1rem 1.5rem 0.75rem;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .color-preset-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .color-preset-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    padding: 0.4rem 0.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    transition: border-color 0.15s;
+    min-width: 70px;
+  }
+  .color-preset-btn:hover { border-color: var(--border-bright); }
+  .color-preset-btn.active { border-color: var(--ice); }
+  .preset-strip {
+    display: flex;
+    gap: 2px;
+  }
+  .preset-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 1px;
+  }
+  .preset-label {
+    font-family: var(--font-ui);
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .color-modal-divider {
+    height: 0;
+  }
+  .color-modal-roles {
+    overflow-y: auto;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+  }
+  .color-modal-roles::-webkit-scrollbar { width: 3px; }
+  .color-modal-roles::-webkit-scrollbar-thumb { background: var(--border-bright); }
+  .color-role-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .color-role-info {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .color-role-name {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  .color-role-desc {
+    font-family: var(--font-ui);
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+  .color-role-swatches {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .color-role-swatch {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 2px;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  .color-role-swatch:hover { transform: scale(1.2); }
+  .color-role-swatch.active { border-color: var(--text); transform: scale(1.15); }
+  .color-modal-footer {
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+  }
 </style>
 </head>
 <body>
@@ -2103,10 +2338,6 @@ body.sheet-mode .sheet-nav-btn { display: block; }
 <!-- ══ WELCOME SPLASH ══ -->
 <div id="welcome-splash">
   <div class="splash-glow"></div>
-  <button class="splash-theme-btn" id="splash-theme-btn" onclick="toggleTheme()">
-    <span id="splash-theme-icon">☀</span>
-    <span id="splash-theme-label">Light Mode</span>
-  </button>
   <div class="splash-flake">❄</div>
   <p class="splash-eyebrow">Player's Strategic Guide</p>
   <h1 class="splash-title">STILLPOINT</h1>
@@ -2200,10 +2431,6 @@ body.sheet-mode .sheet-nav-btn { display: block; }
     <button class="nav-link" data-target="tonal-notes">Tone & Feel</button>
   </div>
   </div>
-  <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()">
-    <span class="theme-toggle-icon" id="theme-toggle-icon">☀</span>
-    <span id="theme-toggle-label">Light Mode</span>
-  </button>
 </nav>
 
 <!-- GUIDE TAB -->
@@ -4637,32 +4864,362 @@ body.sheet-mode .sheet-nav-btn { display: block; }
 
 </div>
 
+<!-- ══ SETTINGS PANEL ══ -->
+<button class="settings-gear" id="settings-gear-btn" onclick="toggleSettingsPanel()" title="Display settings">⚙</button>
+
+<div class="settings-panel" id="settings-panel">
+  <div class="settings-panel-title">Display Settings</div>
+
+  <div class="settings-row">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <span class="settings-label">Font Size</span>
+      <span class="settings-size-display" id="settings-size-display">100%</span>
+    </div>
+    <input type="range" class="settings-slider" id="settings-font-slider"
+      min="80" max="140" step="5" value="100"
+      oninput="applyFontScale(this.value)">
+  </div>
+
+  <button class="settings-toggle-btn" style="width:100%;justify-content:center;margin-top:0.25rem;" onclick="openColorModal()">🎨 Colour Scheme</button>
+
+  <button class="settings-reset" onclick="resetDisplaySettings()">↺ Reset to defaults</button>
+</div>
+
+<!-- ══ COLOUR SCHEME MODAL ══ -->
+<div class="color-modal-overlay" id="color-modal-overlay" onclick="if(event.target===this)closeColorModal()">
+  <div class="color-modal">
+    <div class="color-modal-header">
+      <span class="color-modal-title">Colour Scheme</span>
+      <button class="color-modal-close" onclick="closeColorModal()">✕</button>
+    </div>
+
+    <div class="color-modal-presets">
+      <span class="settings-label" style="display:block;margin-bottom:0.6rem;">Presets</span>
+      <div class="color-preset-row" id="color-presets"></div>
+    </div>
+
+    <div class="color-modal-divider"></div>
+
+    <div class="color-modal-roles" id="color-modal-roles"></div>
+
+    <div class="color-modal-footer">
+      <button class="settings-reset" style="width:auto;padding:0.35rem 1.2rem;" onclick="resetColorScheme()">↺ Reset colours</button>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ── THEME TOGGLE ── */
-function toggleTheme() {
-  const isLight = document.body.classList.toggle('light-mode');
-  document.getElementById('theme-toggle-icon').textContent = isLight ? '🌙' : '☀';
-  document.getElementById('theme-toggle-label').textContent = isLight ? 'Dark Mode' : 'Light Mode';
-  const si = document.getElementById('splash-theme-icon');
-  const sl = document.getElementById('splash-theme-label');
-  if (si) si.textContent = isLight ? '🌙' : '☀';
-  if (sl) sl.textContent = isLight ? 'Dark Mode' : 'Light Mode';
-  try { localStorage.setItem('stillpoint-theme', isLight ? 'light' : 'dark'); } catch(e) {}
+/* ── DISPLAY SETTINGS ── */
+const ACCENT_MAP = {
+  ice:   { main: '#a8d8ea', dim: 'rgba(168,216,234,0.12)', glow: 'rgba(168,216,234,0.06)', rule: 'rgba(168,216,234,0.08)' },
+  gold:  { main: '#c9a84c', dim: 'rgba(201,168,76,0.12)',  glow: 'rgba(201,168,76,0.06)',  rule: 'rgba(201,168,76,0.10)'  },
+  mage:  { main: '#7ec8a0', dim: 'rgba(126,200,160,0.12)', glow: 'rgba(126,200,160,0.06)', rule: 'rgba(126,200,160,0.08)' },
+  psion: { main: '#b89fd4', dim: 'rgba(184,159,212,0.12)', glow: 'rgba(184,159,212,0.06)', rule: 'rgba(184,159,212,0.08)' },
+  meta:  { main: '#e8a87c', dim: 'rgba(232,168,124,0.12)', glow: 'rgba(232,168,124,0.06)', rule: 'rgba(232,168,124,0.08)' },
+  red:   { main: '#c45c4a', dim: 'rgba(196,92,74,0.12)',   glow: 'rgba(196,92,74,0.06)',   rule: 'rgba(196,92,74,0.08)'  },
+  white: { main: '#e8e4dc', dim: 'rgba(232,228,220,0.12)', glow: 'rgba(232,228,220,0.06)', rule: 'rgba(232,228,220,0.08)' },
+};
+
+/* ── COLOUR ROLE DEFINITIONS ── */
+const COLOR_ROLES = [
+  { key: 'ice',     label: 'Primary Accent',   desc: 'Nav highlights, borders, links',  var: '--ice',     dimVar: '--ice-dim',  glowVar: '--ice-glow',  ruleVar: '--rule' },
+  { key: 'gold',    label: 'Secondary Accent',  desc: 'Headings, bold text, gold labels',var: '--gold',    dimVar: '--gold-dim', glowVar: '--gold-glow', ruleVar: '--rule-gold' },
+  { key: 'mage',    label: 'Mage',              desc: 'Mage panel & abilities',          var: '--mage',    dimVar: '--mage-dim' },
+  { key: 'psion',   label: 'Psion',             desc: 'Psion panel & abilities',         var: '--psion',   dimVar: '--psion-dim' },
+  { key: 'meta',    label: 'Meta',              desc: 'Meta panel & abilities',          var: '--meta',    dimVar: '--meta-dim' },
+  { key: 'red',     label: 'Danger / Attack',   desc: 'Attacks, damage, warnings',       var: '--red',     dimVar: '--red-dim' },
+  { key: 'bg',      label: 'Background',        desc: 'Page background colour',          var: '--bg',      dimVar: null, surfaceVars: ['--surface','--surface2','--surface3','--border','--border-bright'] },
+  { key: 'text',    label: 'Text',              desc: 'Main body text colour',           var: '--text',    dimVar: '--text-dim', glowVar: '--text-muted' },
+];
+
+const COLOR_PALETTE = [
+  { hex: '#a8d8ea', name: 'Ice' },
+  { hex: '#c9a84c', name: 'Gold' },
+  { hex: '#7ec8a0', name: 'Sage' },
+  { hex: '#b89fd4', name: 'Lavender' },
+  { hex: '#e8a87c', name: 'Amber' },
+  { hex: '#c45c4a', name: 'Crimson' },
+  { hex: '#e8e4dc', name: 'Parchment' },
+  { hex: '#6ab5d8', name: 'Azure' },
+  { hex: '#d4a0c8', name: 'Rose' },
+  { hex: '#a0c878', name: 'Lime' },
+  { hex: '#f0c060', name: 'Sunlight' },
+  { hex: '#88c4d0', name: 'Teal' },
+  { hex: '#d888a0', name: 'Coral' },
+  { hex: '#a8b8d8', name: 'Slate' },
+  { hex: '#c8a888', name: 'Sand' },
+  { hex: '#90d8c0', name: 'Mint' },
+];
+
+const BG_PALETTE = [
+  { hex: '#060610', name: 'Void (default)' },
+  { hex: '#0a0a18', name: 'Deep Navy' },
+  { hex: '#0d0d12', name: 'Obsidian' },
+  { hex: '#100810', name: 'Deep Purple' },
+  { hex: '#080c10', name: 'Deep Teal' },
+  { hex: '#0c100a', name: 'Forest Dark' },
+  { hex: '#100808', name: 'Deep Red' },
+  { hex: '#12100a', name: 'Dark Sepia' },
+  { hex: '#1a1a2e', name: 'Midnight Blue' },
+  { hex: '#1c1014', name: 'Dark Wine' },
+  { hex: '#f4f1eb', name: 'Parchment' },
+  { hex: '#f0ede6', name: 'Cream' },
+  { hex: '#e8e4db', name: 'Warm White' },
+  { hex: '#1a1a1a', name: 'Charcoal' },
+  { hex: '#2a2a3a', name: 'Slate Dark' },
+  { hex: '#1a1208', name: 'Dark Leather' },
+];
+
+const TEXT_PALETTE = [
+  { hex: '#ede5d4', name: 'Warm Ivory (default)' },
+  { hex: '#ffffff', name: 'White' },
+  { hex: '#f0f0f0', name: 'Off-White' },
+  { hex: '#e8e0d0', name: 'Parchment' },
+  { hex: '#d4e8f0', name: 'Ice White' },
+  { hex: '#f0e8d4', name: 'Warm White' },
+  { hex: '#d0d8e8', name: 'Cool Grey' },
+  { hex: '#e0d4c8', name: 'Sand' },
+  { hex: '#1a1810', name: 'Dark Ink' },
+  { hex: '#2a2420', name: 'Dark Sepia' },
+  { hex: '#181820', name: 'Dark Blue-Black' },
+  { hex: '#201820', name: 'Dark Purple' },
+];
+
+const PRESETS = [
+  { name: 'Default',   colors: { ice:'#a8d8ea', gold:'#c9a84c', mage:'#7ec8a0', psion:'#b89fd4', meta:'#e8a87c', red:'#c45c4a', bg:'#060610', text:'#ede5d4' } },
+  { name: 'Arcane',    colors: { ice:'#b89fd4', gold:'#d4a0c8', mage:'#a8d8ea', psion:'#c8a888', meta:'#a0c878', red:'#c45c4a', bg:'#100810', text:'#ede5d4' } },
+  { name: 'Ember',     colors: { ice:'#e8a87c', gold:'#f0c060', mage:'#d888a0', psion:'#c45c4a', meta:'#c9a84c', red:'#d888a0', bg:'#100808', text:'#f0e8d4' } },
+  { name: 'Verdant',   colors: { ice:'#7ec8a0', gold:'#a0c878', mage:'#88c4d0', psion:'#a8d8ea', meta:'#c9a84c', red:'#c45c4a', bg:'#080c10', text:'#ede5d4' } },
+  { name: 'Frost',     colors: { ice:'#6ab5d8', gold:'#a8b8d8', mage:'#88c4d0', psion:'#90d8c0', meta:'#a8d8ea', red:'#d4a0c8', bg:'#080c10', text:'#d4e8f0' } },
+  { name: 'Crimson',   colors: { ice:'#c45c4a', gold:'#e8a87c', mage:'#d888a0', psion:'#b89fd4', meta:'#f0c060', red:'#a8d8ea', bg:'#0c0808', text:'#ede5d4' } },
+  { name: 'Parchment', colors: { ice:'#8a6a1c', gold:'#6a4a10', mage:'#2e7a50', psion:'#6040a0', meta:'#b05820', red:'#a03028', bg:'#f4f1eb', text:'#1a1810' } },
+  { name: 'Midnight',  colors: { ice:'#a8b8d8', gold:'#c8a888', mage:'#7ec8a0', psion:'#b89fd4', meta:'#e8a87c', red:'#c45c4a', bg:'#1a1a2e', text:'#e8e0d0' } },
+];
+
+/* current custom colors */
+let customColors = { ice:'#a8d8ea', gold:'#c9a84c', mage:'#7ec8a0', psion:'#b89fd4', meta:'#e8a87c', red:'#c45c4a', bg:'#060610', text:'#ede5d4' };
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return r+','+g+','+b;
 }
+function makeAlpha(hex, a) { return 'rgba('+hexToRgb(hex)+','+a+')'; }
+
+function hexLighten(hex, amt) {
+  let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  r=Math.min(255,r+amt); g=Math.min(255,g+amt); b=Math.min(255,b+amt);
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function hexDarken(hex, amt) { return hexLighten(hex, -amt); }
+function hexBrightness(hex) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return (r*299+g*587+b*114)/1000;
+}
+
+function applyColorRole(roleKey, hex) {
+  customColors[roleKey] = hex;
+  const r = document.documentElement.style;
+  const role = COLOR_ROLES.find(x => x.key === roleKey);
+  if (!role) return;
+
+  if (roleKey === 'bg') {
+    const bright = hexBrightness(hex) > 128;
+    r.setProperty('--bg', hex);
+    r.setProperty('--surface',  bright ? hexDarken(hex, 12)  : hexLighten(hex, 8));
+    r.setProperty('--surface2', bright ? hexDarken(hex, 6)   : hexLighten(hex, 14));
+    r.setProperty('--surface3', bright ? hexDarken(hex, 0)   : hexLighten(hex, 20));
+    r.setProperty('--border',         bright ? hexDarken(hex, 30) : hexLighten(hex, 28));
+    r.setProperty('--border-bright',  bright ? hexDarken(hex, 50) : hexLighten(hex, 44));
+  } else if (roleKey === 'text') {
+    r.setProperty('--text', hex);
+    const bright = hexBrightness(hex) > 128;
+    r.setProperty('--text-dim',   bright ? hexDarken(hex, 40)  : hexLighten(hex, 40));
+    r.setProperty('--text-muted', bright ? hexDarken(hex, 80)  : hexLighten(hex, 80));
+  } else {
+    r.setProperty(role.var, hex);
+    r.setProperty(role.dimVar, makeAlpha(hex, 0.15));
+    if (role.glowVar) r.setProperty(role.glowVar, makeAlpha(hex, 0.07));
+    if (role.ruleVar) r.setProperty(role.ruleVar, makeAlpha(hex, 0.10));
+  }
+
+  document.querySelectorAll('[data-role="'+roleKey+'"]').forEach(s => {
+    s.classList.toggle('active', s.dataset.hex === hex);
+  });
+  // update custom hex input if visible
+  const inp = document.getElementById('custom-hex-'+roleKey);
+  if (inp) inp.value = hex;
+
+  try { localStorage.setItem('sp-colors', JSON.stringify(customColors)); } catch(e) {}
+}
+
+function applyPreset(preset) {
+  Object.entries(preset.colors).forEach(([k,v]) => applyColorRole(k, v));
+  renderColorModal();
+  document.querySelectorAll('.color-preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === preset.name));
+  try { localStorage.setItem('sp-colors', JSON.stringify(customColors)); } catch(e) {}
+}
+
+function resetColorScheme() {
+  applyPreset(PRESETS[0]);
+  try { localStorage.removeItem('sp-colors'); } catch(e) {}
+}
+
+function openColorModal() {
+  renderColorModal();
+  document.getElementById('color-modal-overlay').style.display = 'flex';
+}
+function closeColorModal() {
+  document.getElementById('color-modal-overlay').style.display = 'none';
+}
+
+function renderColorModal() {
+  // Presets
+  const presetRow = document.getElementById('color-presets');
+  presetRow.innerHTML = '';
+  PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'color-preset-btn';
+    btn.dataset.preset = p.name;
+    const strip = document.createElement('div');
+    strip.className = 'preset-strip';
+    Object.values(p.colors).forEach(hex => {
+      const dot = document.createElement('div');
+      dot.className = 'preset-dot';
+      dot.style.background = hex;
+      strip.appendChild(dot);
+    });
+    const lbl = document.createElement('span');
+    lbl.className = 'preset-label';
+    lbl.textContent = p.name;
+    btn.appendChild(strip);
+    btn.appendChild(lbl);
+    const isActive = Object.entries(p.colors).every(([k,v]) => customColors[k] === v);
+    if (isActive) btn.classList.add('active');
+    btn.addEventListener('click', () => applyPreset(p));
+    presetRow.appendChild(btn);
+  });
+
+  // Roles
+  const rolesEl = document.getElementById('color-modal-roles');
+  rolesEl.innerHTML = '';
+  COLOR_ROLES.forEach(role => {
+    const palette = role.key === 'bg' ? BG_PALETTE : role.key === 'text' ? TEXT_PALETTE : COLOR_PALETTE;
+
+    const row = document.createElement('div');
+    row.className = 'color-role-row';
+
+    const info = document.createElement('div');
+    info.className = 'color-role-info';
+    const nameEl = document.createElement('div');
+    nameEl.className = 'color-role-name';
+    nameEl.textContent = role.label;
+    const descEl = document.createElement('div');
+    descEl.className = 'color-role-desc';
+    descEl.textContent = role.desc;
+    info.appendChild(nameEl);
+    info.appendChild(descEl);
+
+    const swatches = document.createElement('div');
+    swatches.className = 'color-role-swatches';
+    palette.forEach(c => {
+      const sw = document.createElement('div');
+      sw.className = 'color-role-swatch';
+      sw.dataset.role = role.key;
+      sw.dataset.hex  = c.hex;
+      sw.style.background = c.hex;
+      sw.title = c.name;
+      if (customColors[role.key] === c.hex) sw.classList.add('active');
+      sw.addEventListener('click', () => applyColorRole(role.key, c.hex));
+      swatches.appendChild(sw);
+    });
+
+    // Custom hex input
+    const hexRow = document.createElement('div');
+    hexRow.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-top:0.3rem;';
+    const hexInp = document.createElement('input');
+    hexInp.type = 'text';
+    hexInp.id = 'custom-hex-' + role.key;
+    hexInp.value = customColors[role.key] || '';
+    hexInp.placeholder = '#rrggbb';
+    hexInp.maxLength = 7;
+    hexInp.style.cssText = 'background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.1em;padding:3px 8px;width:90px;outline:none;';
+    const preview = document.createElement('div');
+    preview.style.cssText = 'width:18px;height:18px;border:1px solid var(--border-bright);flex-shrink:0;background:' + (customColors[role.key] || '#000') + ';';
+    const applyBtn = document.createElement('button');
+    applyBtn.textContent = 'Apply';
+    applyBtn.style.cssText = 'background:none;border:1px solid var(--border-bright);color:var(--text-muted);font-family:var(--font-mono);font-size:0.58rem;letter-spacing:0.12em;padding:3px 10px;cursor:pointer;transition:all 0.15s;';
+    hexInp.addEventListener('input', () => {
+      const v = hexInp.value;
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) preview.style.background = v;
+    });
+    applyBtn.addEventListener('click', () => {
+      const v = hexInp.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) applyColorRole(role.key, v);
+      else hexInp.style.borderColor = 'var(--red)';
+    });
+    hexRow.appendChild(hexInp);
+    hexRow.appendChild(preview);
+    hexRow.appendChild(applyBtn);
+
+    row.appendChild(info);
+    row.appendChild(swatches);
+    row.appendChild(hexRow);
+    rolesEl.appendChild(row);
+  });
+}
+
+function toggleSettingsPanel() {
+  document.getElementById('settings-panel').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const panel = document.getElementById('settings-panel');
+  const gear  = document.getElementById('settings-gear-btn');
+  if (panel && gear && !panel.contains(e.target) && !gear.contains(e.target)) {
+    panel.classList.remove('open');
+  }
+});
+
+function applyFontScale(val) {
+  document.documentElement.style.fontSize = (val / 100 * 17) + 'px';
+  document.getElementById('settings-size-display').textContent = val + '%';
+  try { localStorage.setItem('sp-fontscale', val); } catch(e) {}
+}
+
+function toggleHighContrast() {
+  const on = document.body.classList.toggle('high-contrast');
+  const btn = document.getElementById('contrast-toggle-btn');
+  btn.textContent = on ? 'On' : 'Off';
+  btn.classList.toggle('active', on);
+  try { localStorage.setItem('sp-contrast', on ? '1' : '0'); } catch(e) {}
+}
+
+function resetDisplaySettings() {
+  applyFontScale(100);
+  document.getElementById('settings-font-slider').value = 100;
+  resetColorScheme();
+  if (document.body.classList.contains('high-contrast')) toggleHighContrast();
+  try {
+    localStorage.removeItem('sp-fontscale');
+    localStorage.removeItem('sp-accent');
+    localStorage.removeItem('sp-contrast');
+  } catch(e) {}
+}
+
 (function() {
   try {
-    if (localStorage.getItem('stillpoint-theme') === 'light') {
-      document.body.classList.add('light-mode');
-      document.getElementById('theme-toggle-icon').textContent = '🌙';
-      document.getElementById('theme-toggle-label').textContent = 'Dark Mode';
-      const si = document.getElementById('splash-theme-icon');
-      const sl = document.getElementById('splash-theme-label');
-      if (si) si.textContent = '🌙';
-      if (sl) sl.textContent = 'Dark Mode';
+    const scale = localStorage.getItem('sp-fontscale');
+    if (scale) { applyFontScale(scale); document.getElementById('settings-font-slider').value = scale; }
+    const saved = localStorage.getItem('sp-colors');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      Object.entries(parsed).forEach(([k,v]) => applyColorRole(k, v));
     }
+    if (localStorage.getItem('sp-contrast') === '1') toggleHighContrast();
   } catch(e) {}
 })();
+</script>
 
+<script>
 /* ── TAB SWITCHING ── */
 function switchTab(tab) {
   const guideTab = document.getElementById('guide-tab');
