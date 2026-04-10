@@ -1,11 +1,11 @@
 {
-  "name": "NEXUS Character Sheet",
-  "version": "2.0.0",
+  "name": "Stillpoint Player Hub",
+  "version": "3.0.0",
   "manifest_version": 1,
   "action": {
-    "title": "NEXUS Sheet",
-    "popover": "/nexus-sheet/index.html",
-    "icon": "/nexus-sheet/icon.svg",
+    "title": "Player Hub",
+    "popover": "/Stillpoint-player-hub/index.html",
+    "icon": "/Stillpoint-player-hub/stillpoint_app_icon_512.svg",
     "height": 700,
     "width": 920
   }
