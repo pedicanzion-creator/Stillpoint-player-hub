@@ -4564,6 +4564,14 @@ body.sheet-mode .sheet-nav-btn { display: block; }
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="track-container" id="armor-track" style="display:none;">
+              <div class="track-header">
+                <span class="track-name" style="color:var(--blue);">Armor</span>
+                <span class="track-count" id="armor-hp-count"></span>
+              </div>
+              <div class="track-source">Worn armor pieces — damage per piece</div>
+              <div id="armor-bars-container" style="margin-top:0.5rem;"></div>
+            </div>
             <div class="track-container">
               <div class="track-header">
                 <span class="track-name" style="color:var(--accent);">Fatigue</span>
@@ -4696,6 +4704,8 @@ body.sheet-mode .sheet-nav-btn { display: block; }
           <button class="add-btn" onclick="addActionWithSlotCheck()">+ add action</button>
         </div>
       </div>
+
+      <div class="divider"></div>
 
       <!-- Inventory -->
       <div class="section">
@@ -6459,10 +6469,10 @@ document.addEventListener('keydown', function(e) {
         const fb = tierFortitude[ft];
         const { totalFort: armorFortBonus, totalFatigue: armorFatigueCost } = getArmorTotals();
 
-        const _wc = document.getElementById('wound-count'); if (_wc) _wc.textContent = '0 / ' + (wp + fb + armorFortBonus);
+        const _wc = document.getElementById('wound-count'); if (_wc) _wc.textContent = '0 / ' + (wp + fb);
         const _fc = document.getElementById('fatigue-count'); if (_fc) _fc.textContent = '0 / ' + fa;
         const _ws = document.getElementById('wound-source'); if (_ws) _ws.textContent =
-          'Vigor (' + vt + ') → ' + wp + ' wound pool · Fortitude (' + ft + ') → ' + fb + (armorFortBonus > 0 ? ' +' + armorFortBonus + ' armor' : '') + ' buffer · Poison & Bleed hit Fortitude buffer first';
+          'Vigor (' + vt + ') → ' + wp + ' wound pool · Fortitude (' + ft + ') → ' + fb + ' buffer' + (armorFortBonus > 0 ? ' · 🛡 ' + armorFortBonus + ' armor HP' : '') + ' · Poison & Bleed hit Fortitude buffer first';
         const _fs = document.getElementById('fatigue-source'); if (_fs) _fs.textContent = 'Vigor (' + vt + ') → ' + fa + ' fatigue slots';
 
         buildBoxes('wpool-boxes', wp, 'wpool');
@@ -6512,12 +6522,11 @@ document.addEventListener('keydown', function(e) {
         const c = document.getElementById(cid);
         if (!c) return;
         c.innerHTML = '';
-        const total = baseCount + armorCount;
-        for (let i = 0; i < total; i++) {
-          const isArmor = i >= baseCount;
+        // Only build base fortitude boxes — armor is its own separate bar
+        for (let i = 0; i < baseCount; i++) {
           const b = document.createElement('div');
-          b.className = 'track-box' + (isArmor ? ' track-box-armor' : '') + (filledSet && filledSet.has(i) ? ' filled-wound' : '');
-          b.dataset.armor = isArmor ? '1' : '0';
+          b.className = 'track-box' + (filledSet && filledSet.has(i) ? ' filled-wound' : '');
+          b.dataset.armor = '0';
           b.dataset.index = i;
           b.onclick = function() {
             const boxes = [...c.querySelectorAll('.track-box')];
@@ -6529,11 +6538,221 @@ document.addEventListener('keydown', function(e) {
               x.classList.toggle('filled-wound', j < newFill);
             });
             updateCounts();
-            checkArmorDurability();
           };
           c.appendChild(b);
         }
+        // Build the separate armor bars (one per worn piece)
+        renderArmorBars();
       }
+
+      // ── PER-PIECE ARMOR BAR SYSTEM ──
+      // armorDamage: id → number of filled boxes
+      // armorDestroyed: Set of ids whose all boxes are filled (fully broken)
+      const armorDamage = {};
+      const armorDestroyed = new Set();
+
+      // Renders one wound-layer row per worn armor piece (+ destroyed pieces awaiting repair)
+      function renderArmorBars() {
+        const container = document.getElementById('armor-bars-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const wornIds = Object.keys(wornArmor);
+        // Also include destroyed pieces that haven't been repaired yet
+        const destroyedIds = [...armorDestroyed].filter(id => !wornArmor[id]);
+        const allIds = [...wornIds, ...destroyedIds];
+
+        allIds.forEach(id => {
+          const itemDiv = document.getElementById(id);
+          const name = itemDiv ? (itemDiv.querySelector('[data-key="name"]')?.value || 'Armor') : 'Armor';
+          const fortBonus = wornArmor[id] ? (wornArmor[id].fortBonus || 0) : 0;
+          const filled = armorDamage[id] || 0;
+          const isDestroyed = armorDestroyed.has(id);
+
+          const layer = document.createElement('div');
+          layer.className = 'wound-layer';
+          layer.id = 'armor-bar-row-' + id;
+
+          // Label row
+          const label = document.createElement('div');
+          label.className = 'wound-layer-label';
+          label.style.cssText = 'color:var(--blue);display:flex;align-items:center;justify-content:space-between;';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.innerHTML = '🛡 ' + name + (isDestroyed
+            ? ' <span style="color:var(--red);font-size:0.7em;letter-spacing:0.15em;"> ⚠ DESTROYED</span>'
+            : ' <span style="color:var(--text-muted);font-weight:400;">— ' + fortBonus + ' armor HP</span>');
+          label.appendChild(nameSpan);
+
+          // Repair button — shown whenever any box is filled
+          if (filled > 0 || isDestroyed) {
+            const repBtn = document.createElement('button');
+            repBtn.style.cssText = 'background:none;border:1px solid var(--blue);color:var(--blue);font-family:var(--font-mono);font-size:0.5rem;letter-spacing:0.15em;padding:0.2rem 0.6rem;cursor:pointer;text-transform:uppercase;';
+            repBtn.textContent = '🔧 Repair';
+            repBtn.addEventListener('click', () => openArmorPieceRepair(id));
+            label.appendChild(repBtn);
+          }
+          layer.appendChild(label);
+
+          // Damage boxes
+          const boxRow = document.createElement('div');
+          boxRow.className = 'track-boxes';
+          boxRow.id = 'armor-boxes-' + id;
+
+          if (!isDestroyed && fortBonus > 0) {
+            for (let i = 0; i < fortBonus; i++) {
+              const b = document.createElement('div');
+              b.className = 'track-box track-box-armor' + (i < filled ? ' filled-wound' : '');
+              b.dataset.index = i;
+              b.addEventListener('click', function() {
+                const boxes = [...boxRow.querySelectorAll('.track-box')];
+                const clickedIdx = parseInt(this.dataset.index, 10);
+                const filledCount = boxes.filter(x => x.classList.contains('filled-wound')).length;
+                const newFill = (clickedIdx === filledCount - 1) ? 0 : clickedIdx + 1;
+                boxes.forEach((x, j) => x.classList.toggle('filled-wound', j < newFill));
+                armorDamage[id] = boxes.filter(x => x.classList.contains('filled-wound')).length;
+                checkPieceDurability(id);
+                updateCounts();
+              });
+              boxRow.appendChild(b);
+            }
+          }
+          layer.appendChild(boxRow);
+          container.appendChild(layer);
+        });
+
+        // Show/hide the armor track box based on whether there's anything to display
+        const armorTrack = document.getElementById('armor-track');
+        if (armorTrack) armorTrack.style.display = allIds.length > 0 ? '' : 'none';
+
+        // Update the armor HP count in the header
+        const hpCount = document.getElementById('armor-hp-count');
+        if (hpCount) {
+          const totalHP = wornIds.reduce((s, id) => s + (wornArmor[id]?.fortBonus || 0), 0);
+          hpCount.textContent = totalHP > 0 ? totalHP + ' hp' : '';
+        }
+      }
+
+      // Check if a single armor piece has been fully filled → destroy it
+      function checkPieceDurability(id) {
+        const row = document.getElementById('armor-boxes-' + id);
+        if (!row) return;
+        const boxes = [...row.querySelectorAll('.track-box')];
+        if (boxes.length === 0) return;
+        const allFilled = boxes.every(b => b.classList.contains('filled-wound'));
+        if (allFilled && !armorDestroyed.has(id)) {
+          destroyArmorPiece(id);
+        }
+      }
+
+      // Destroy a single armor piece: un-wear it, mark destroyed, re-render
+      function destroyArmorPiece(id) {
+        const div = document.getElementById(id);
+        const name = div ? (div.querySelector('[data-key="name"]')?.value || 'Armor') : 'Armor';
+        armorDestroyed.add(id);
+        if (wornArmor[id]) {
+          if (div && div._forceUnwear) div._forceUnwear();
+          else delete wornArmor[id];
+        }
+        renderArmorBars();
+        rebuildTracks();
+        toast(name + ' destroyed — repair it in the armor bar to restore', 'var(--red)');
+      }
+
+      // Repair a single piece: consume material, clear boxes, remove destroyed state
+      function repairArmorPiece(id, consumeMatType) {
+        if (consumeMatType) consumeMaterial(consumeMatType);
+        const row = document.getElementById('armor-boxes-' + id);
+        if (row) {
+          [...row.querySelectorAll('.track-box.filled-wound')].forEach(b => b.classList.remove('filled-wound'));
+        }
+        armorDamage[id] = 0;
+        if (armorDestroyed.has(id)) {
+          armorDestroyed.delete(id);
+          // Restore item card state
+          const div = document.getElementById(id);
+          if (div) {
+            const banner = div.querySelector('.armor-repair-banner');
+            if (banner) banner.remove();
+            div.style.opacity = '';
+            const rmBtn = div.querySelector('.remove-btn');
+            if (rmBtn) { rmBtn.style.position = ''; rmBtn.style.zIndex = ''; rmBtn.style.pointerEvents = ''; }
+            const armorPanel = div.querySelector('#inv-panel-armor-' + id);
+            if (armorPanel) {
+              const wearBtn = armorPanel.querySelector('.con-use-btn');
+              const wearStatus = armorPanel.querySelector('div[style*="flex:1"]');
+              if (wearBtn) wearBtn.textContent = 'Wear';
+              if (wearStatus) { wearStatus.textContent = '— not worn (repaired)'; wearStatus.style.color = 'var(--text-muted)'; }
+            }
+          }
+        }
+        renderArmorBars();
+        const name = document.getElementById(id) ? (document.getElementById(id).querySelector('[data-key="name"]')?.value || 'Armor') : 'Armor';
+        toast(name + ' repaired — ready to wear again', 'var(--blue)');
+      }
+
+      // Open repair modal for a specific armor piece
+      function openArmorPieceRepair(id) {
+        const modal = document.getElementById('armor-repair-modal');
+        const body = document.getElementById('armor-repair-modal-body');
+        const btns = document.getElementById('armor-repair-modal-btns');
+        btns.innerHTML = '';
+
+        const div = document.getElementById(id);
+        const name = div ? (div.querySelector('[data-key="name"]')?.value || 'Armor') : 'Armor';
+        const matEl = div ? div.querySelector('[data-key="armMaterial"]') : null;
+        const armorMat = matEl ? matEl.value : '';
+        const matLabel = { metal: 'Metal', leather: 'Leather', cloth: 'Cloth', wood: 'Wood', bone: 'Bone', other: 'Other' }[armorMat] || (armorMat || '');
+        const hasMat = armorMat && checkHasMaterial(armorMat);
+        const filled = armorDamage[id] || 0;
+
+        if (!armorMat) {
+          body.innerHTML = 'No material type is set for <span style="color:var(--accent);font-family:var(--font-display);font-weight:600;">' + name + '</span>. Open the item and set its <span style="color:var(--text);">Material</span> field so the repair system knows what consumable to pull from.';
+          btns.appendChild(makeModalBtn('OK', 'var(--border-bright)', closeRepairModal, true));
+        } else if (!hasMat) {
+          body.innerHTML = 'You need <span style="color:var(--text);">' + matLabel + '</span> material in your inventory to repair <span style="color:var(--accent);font-family:var(--font-display);font-weight:600;">' + name + '</span>.<br><br><span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);">Add a Material consumable of type <em>' + matLabel + '</em> to your inventory first.</span>';
+          btns.appendChild(makeModalBtn('OK', 'var(--border-bright)', closeRepairModal, true));
+        } else {
+          body.innerHTML = 'Use <span style="color:var(--text);">' + matLabel + '</span> materials to patch <span style="color:var(--accent);font-family:var(--font-display);font-weight:600;">' + name + '</span>?<br><br><span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);">1 use of ' + matLabel + ' consumed · clears 1 damage box · ' + filled + ' box' + (filled !== 1 ? 'es' : '') + ' filled.</span>';
+          btns.appendChild(makeModalBtn('Repair (−1 box)', 'var(--blue)', function() {
+            closeRepairModal();
+            const currentFilled = armorDamage[id] || 0;
+            if (currentFilled > 0) {
+              consumeMaterial(armorMat);
+              armorDamage[id] = currentFilled - 1;
+              if (armorDestroyed.has(id) && armorDamage[id] === 0) {
+                armorDestroyed.delete(id);
+                const d = document.getElementById(id);
+                if (d) {
+                  const banner = d.querySelector('.armor-repair-banner');
+                  if (banner) banner.remove();
+                  d.style.opacity = '';
+                  const rmBtn = d.querySelector('.remove-btn');
+                  if (rmBtn) { rmBtn.style.position = ''; rmBtn.style.zIndex = ''; rmBtn.style.pointerEvents = ''; }
+                  const armorPanel = d.querySelector('#inv-panel-armor-' + id);
+                  if (armorPanel) {
+                    const wearBtn = armorPanel.querySelector('.con-use-btn');
+                    const wearStatus = armorPanel.querySelector('div[style*="flex:1"]');
+                    if (wearBtn) wearBtn.textContent = 'Wear';
+                    if (wearStatus) { wearStatus.textContent = '— not worn (repaired)'; wearStatus.style.color = 'var(--text-muted)'; }
+                  }
+                }
+              }
+              renderArmorBars();
+              const rem = armorDamage[id] || 0;
+              toast(name + ' patched · ' + rem + ' box' + (rem !== 1 ? 'es' : '') + ' remaining', 'var(--blue)');
+            }
+          }));
+          btns.appendChild(makeModalBtn('Cancel', 'var(--border-bright)', closeRepairModal, true));
+        }
+        modal.style.display = 'flex';
+      }
+
+      // Legacy stubs so old call-sites (openRepairModal, repairSingleArmor) still work
+      function repairSingleArmor(id) { repairArmorPiece(id, null); }
+      function repairArmorBar() { Object.keys(wornArmor).forEach(id => repairArmorPiece(id, null)); }
+      function checkArmorDurability() { Object.keys(wornArmor).forEach(id => checkPieceDurability(id)); }
+      function updateArmorRepairBtn() { /* no-op: per-piece system handles its own buttons */ }
 
       function updateCounts() {
         const wpf = document.querySelectorAll('#wpool-boxes .filled-wpool').length;
@@ -6550,79 +6769,6 @@ document.addEventListener('keydown', function(e) {
           document.getElementById('psi-count').textContent = pf + ' / ' + pt;
         }
         checkArmorDurability();
-      }
-
-      function checkArmorDurability() {
-        if (Object.keys(wornArmor).length === 0) return;
-        const armorBoxes = [...document.querySelectorAll('#fortitude-boxes .track-box-armor')];
-        if (armorBoxes.length === 0) return;
-        const allFilled = armorBoxes.every(b => b.classList.contains('filled-wound'));
-        if (allFilled) {
-          [...Object.keys(wornArmor)].forEach(id => destroyArmor(id));
-        }
-      }
-
-      function destroyArmor(id) {
-        if (!wornArmor[id]) return; // already removed
-        const div = document.getElementById(id);
-        if (!div) return;
-        const name = div.querySelector('[data-key="name"]')?.value || 'Armor';
-
-        // Un-wear it
-        delete wornArmor[id];
-
-        // Reset the closure's armorWorn state via the hook
-        if (div._forceUnwear) div._forceUnwear();
-
-        // Grey out the item card and show repair overlay
-        div.style.opacity = '0.5';
-        div.style.pointerEvents = 'none';
-
-        // Add repair banner if not already there
-        if (!div.querySelector('.armor-repair-banner')) {
-          const banner = document.createElement('div');
-          banner.className = 'armor-repair-banner';
-          banner.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,10,18,0.7);z-index:10;pointer-events:all;';
-          const bannerInner = document.createElement('div');
-          bannerInner.style.textAlign = 'center';
-          const bannerLabel = document.createElement('div');
-          bannerLabel.style.cssText = 'font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--red);margin-bottom:0.5rem;';
-          bannerLabel.textContent = '⚠ Repair Needed';
-          const repairBtn = document.createElement('button');
-          repairBtn.style.cssText = 'background:none;border:1px solid var(--blue);color:var(--blue);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.15em;padding:0.3rem 0.8rem;cursor:pointer;text-transform:uppercase;';
-          repairBtn.textContent = 'Repair';
-          repairBtn.addEventListener('click', () => repairArmor(id));
-          bannerInner.appendChild(bannerLabel);
-          bannerInner.appendChild(repairBtn);
-          banner.appendChild(bannerInner);
-          div.style.position = 'relative';
-          div.appendChild(banner);
-        }
-
-        // Rebuild tracks to remove armor bonus
-        rebuildTracks();
-        toast(name + ' destroyed — repair needed', 'var(--red)');
-      }
-
-      function repairArmor(id) {
-        const div = document.getElementById(id);
-        if (!div) return;
-        // Remove banner and restore item
-        const banner = div.querySelector('.armor-repair-banner');
-        if (banner) banner.remove();
-        div.style.opacity = '';
-        div.style.pointerEvents = '';
-
-        // Reset wear button state
-        const armorPanel = div.querySelector('#inv-panel-armor-' + id);
-        if (armorPanel) {
-          const wearBtn = armorPanel.querySelector('.con-use-btn');
-          const wearStatus = armorPanel.querySelector('div[style*="flex:1"]');
-          if (wearBtn) wearBtn.textContent = 'Wear';
-          if (wearStatus) { wearStatus.textContent = '— not worn (repaired)'; wearStatus.style.color = 'var(--text-muted)'; }
-        }
-        const name = div.querySelector('[data-key="name"]')?.value || 'Armor';
-        toast(name + ' repaired — ready to wear again', 'var(--blue)');
       }
 
       /* ══════════════════════════════════════════════
@@ -7689,6 +7835,26 @@ document.addEventListener('keydown', function(e) {
           });
           gauntletRow.appendChild(gauntletLbl);
           gauntletRow.appendChild(handBtnRow);
+
+          // ── GAUNTLET ARMOR HP FIELD ──
+          const gauntletArmorFg = document.createElement('div');
+          gauntletArmorFg.className = 'inv-fg';
+          gauntletArmorFg.style.marginTop = '0.5rem';
+          const gauntletArmorLbl = document.createElement('div');
+          gauntletArmorLbl.className = 'inv-sub-label';
+          gauntletArmorLbl.textContent = 'Armor HP (hands)';
+          const gauntletArmorInp = document.createElement('input');
+          gauntletArmorInp.className = 'inv-field-input';
+          gauntletArmorInp.style.fontFamily = 'var(--font-mono)';
+          gauntletArmorInp.setAttribute('data-key', 'wpnArmorHP');
+          gauntletArmorInp.type = 'number';
+          gauntletArmorInp.min = '0';
+          gauntletArmorInp.placeholder = '0';
+          gauntletArmorInp.value = d.wpnArmorHP || '';
+          gauntletArmorFg.appendChild(gauntletArmorLbl);
+          gauntletArmorFg.appendChild(gauntletArmorInp);
+          gauntletRow.appendChild(gauntletArmorFg);
+
           el.appendChild(gauntletRow);
 
           // Show/hide gauntlet row based on type selection
@@ -7766,6 +7932,17 @@ document.addEventListener('keydown', function(e) {
                 div._linkedActionIds = linkedActionIds;
               });
 
+              // Register gauntlet armor HP in wornArmor so it gets its own damage bar
+              if (wpnType === 'gauntlets') {
+                const armorHP = parseInt(gauntletArmorInp.value, 10) || 0;
+                if (armorHP > 0) {
+                  wornArmor[id] = { fortBonus: armorHP, fatigueCost: 0 };
+                  if (!(id in armorDamage)) armorDamage[id] = 0;
+                  renderArmorBars();
+                  rebuildTracks();
+                }
+              }
+
               const count = linkedActionIds.length;
               equipStatus.textContent = '▲ equipped — ' + count + ' action' + (count !== 1 ? 's' : '') + ' created';
               equipStatus.style.color = 'var(--red)';
@@ -7776,6 +7953,14 @@ document.addEventListener('keydown', function(e) {
               removeWeaponActions(linkedActionIds);
               linkedActionIds = [];
               div._linkedActionIds = linkedActionIds;
+
+              // Unregister gauntlet armor
+              if (wornArmor[id]) {
+                delete wornArmor[id];
+                renderArmorBars();
+                rebuildTracks();
+              }
+
               equipStatus.textContent = '— not equipped';
               equipStatus.style.color = 'var(--text-muted)';
               equipBtn.textContent = 'Equip';
@@ -7784,15 +7969,61 @@ document.addEventListener('keydown', function(e) {
             }
           }
 
+          // Re-sync armor bar if HP value changes while equipped
+          gauntletArmorInp.addEventListener('change', () => {
+            if (weaponEquipped && typeSel.value === 'gauntlets') {
+              const armorHP = parseInt(gauntletArmorInp.value, 10) || 0;
+              if (armorHP > 0) {
+                wornArmor[id] = { fortBonus: armorHP, fatigueCost: 0 };
+                if (!(id in armorDamage)) armorDamage[id] = 0;
+              } else {
+                delete wornArmor[id];
+              }
+              renderArmorBars();
+              rebuildTracks();
+            }
+          });
+
           equipBtn.addEventListener('click', () => {
             weaponEquipped = !weaponEquipped;
             div._weaponEquipped = weaponEquipped;
             syncWeaponEquip();
+            // Gauntlets occupy the hands armor slot — sync conflict state
+            if (typeSel.value === 'gauntlets') syncGauntletHandSlot(weaponEquipped, selectedHand, div.querySelector('[data-key="name"]')?.value || 'Gauntlets');
           });
+
+          // When hand selection changes on an equipped gauntlet, re-sync slot
+          handBtnRow.querySelectorAll('button').forEach(hb => {
+            hb.addEventListener('click', () => {
+              if (weaponEquipped && typeSel.value === 'gauntlets') {
+                setTimeout(() => syncGauntletHandSlot(true, selectedHand, div.querySelector('[data-key="name"]')?.value || 'Gauntlets'), 0);
+              }
+            });
+          });
+
+          // When weapon type changes away from/to gauntlets while equipped, re-sync
+          typeSel.addEventListener('change', () => {
+            if (weaponEquipped) syncGauntletHandSlot(typeSel.value === 'gauntlets', selectedHand, div.querySelector('[data-key="name"]')?.value || 'Gauntlets');
+          });
+
+          // Store unregister hook for when item is removed
+          div._unregisterGauntletSlot = () => {
+            if (weaponEquipped && typeSel.value === 'gauntlets') syncGauntletHandSlot(false, selectedHand, '');
+          };
+          const _origRmBtn = div.querySelector('.remove-btn');
+          if (_origRmBtn) {
+            _origRmBtn.addEventListener('click', () => {
+              if (weaponEquipped && typeSel.value === 'gauntlets') syncGauntletHandSlot(false, selectedHand, '');
+            });
+          }
 
           // Restore equipped state on load
           if (weaponEquipped) {
-            const _tryEquip = () => { if (_isDeserializing) setTimeout(_tryEquip, 50); else syncWeaponEquip(); };
+            const _tryEquip = () => {
+              if (_isDeserializing) { setTimeout(_tryEquip, 50); return; }
+              syncWeaponEquip();
+              if (typeSel.value === 'gauntlets') syncGauntletHandSlot(true, selectedHand, div.querySelector('[data-key="name"]')?.value || 'Gauntlets');
+            };
             setTimeout(_tryEquip, 80);
           }
 
@@ -7805,11 +8036,69 @@ document.addEventListener('keydown', function(e) {
         let armorWorn = d.armWorn || false;
         div._armorWorn = armorWorn;
         body.appendChild(panel('armor','var(--blue)','Armor Properties', el => {
+          // Slot + Side row
+          const slotRow = document.createElement('div'); slotRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.4rem;';
+          const slotFg = document.createElement('div'); slotFg.className = 'inv-fg';
+          const slotLbl = document.createElement('div'); slotLbl.className = 'inv-sub-label'; slotLbl.textContent = 'Armor Slot';
+          const slotSel = document.createElement('select'); slotSel.className = 'inv-field-sel'; slotSel.setAttribute('data-key','armSlot');
+          [['','— unset —'],['head','Head'],['chest','Chest'],['legs','Legs'],['feet','Feet']].forEach(([v,l]) => {
+            const o = document.createElement('option'); o.value = v; o.textContent = l; slotSel.appendChild(o);
+          });
+          slotSel.value = d.armSlot || '';
+          slotFg.appendChild(slotLbl); slotFg.appendChild(slotSel);
+
+          const sideFg = document.createElement('div'); sideFg.className = 'inv-fg';
+          sideFg.style.display = (d.armSlot === 'feet') ? '' : 'none';
+          const sideLbl = document.createElement('div'); sideLbl.className = 'inv-sub-label'; sideLbl.textContent = 'Side';
+          const sideSel = document.createElement('select'); sideSel.className = 'inv-field-sel'; sideSel.setAttribute('data-key','armSide');
+          [['both','Both'],['left','Left'],['right','Right']].forEach(([v,l]) => {
+            const o = document.createElement('option'); o.value = v; o.textContent = l; sideSel.appendChild(o);
+          });
+          sideSel.value = d.armSide || 'both';
+          sideFg.appendChild(sideLbl); sideFg.appendChild(sideSel);
+
+          slotSel.addEventListener('change', () => {
+            sideFg.style.display = (slotSel.value === 'feet') ? '' : 'none';
+            // Update badge to show slot
+            const b = document.getElementById('inv-badge-' + id);
+            if (b) {
+              const slotLabel = slotSel.options[slotSel.selectedIndex]?.text || '';
+              b.textContent = slotSel.value ? 'Armor · ' + slotLabel : 'Armor';
+            }
+            // Re-check gauntlet conflicts whenever slot changes
+            if (typeof refreshGauntletConflicts === 'function') refreshGauntletConflicts();
+          });
+          sideSel.addEventListener('change', () => {
+            if (typeof refreshGauntletConflicts === 'function') refreshGauntletConflicts();
+          });
+          // Set initial badge with slot
+          setTimeout(() => {
+            const b = document.getElementById('inv-badge-' + id);
+            if (b && slotSel.value) {
+              const slotLabel = slotSel.options[slotSel.selectedIndex]?.text || '';
+              b.textContent = 'Armor · ' + slotLabel;
+            }
+          }, 0);
+
+          slotRow.appendChild(slotFg); slotRow.appendChild(sideFg);
+          el.appendChild(slotRow);
+
           const g = document.createElement('div'); g.className = 'inv-g3';
           g.appendChild(ifield('Fortitude Bonus','armFortitude',d.armFortitude,'+0 hits',true));
           g.appendChild(ifield('Vigor Bonus','armVigor',d.armVigor,'+0 pool',true));
           g.appendChild(ifield('Fatigue (wear)','armFatigue',d.armFatigue,'0',true));
           el.appendChild(g);
+
+          // Material dropdown
+          const matRow = document.createElement('div'); matRow.className = 'inv-fg'; matRow.style.marginBottom = '0.4rem';
+          const matLbl = document.createElement('div'); matLbl.className = 'inv-sub-label'; matLbl.textContent = 'Material';
+          const matSel = document.createElement('select'); matSel.className = 'inv-field-sel'; matSel.setAttribute('data-key','armMaterial');
+          [['','— unset —'],['metal','Metal'],['leather','Leather'],['cloth','Cloth']].forEach(([v,l]) => {
+            const o = document.createElement('option'); o.value = v; o.textContent = l; matSel.appendChild(o);
+          });
+          matSel.value = d.armMaterial || '';
+          matRow.appendChild(matLbl); matRow.appendChild(matSel);
+          el.appendChild(matRow);
           el.appendChild(itags('Tags','armTags',INV_ARM_TAGS,d.armTags));
           el.appendChild(itextarea('Resistances','armSpecial',d.armSpecial,'Damage resistance…',2));
 
@@ -7832,6 +8121,8 @@ document.addEventListener('keydown', function(e) {
             const name = div.querySelector('[data-key="name"]')?.value || 'Armor';
             if (armorWorn) {
               wornArmor[id] = { fortBonus, fatigueCost };
+              // Fresh damage state when newly worn — don't carry over old boxes
+              if (!(id in armorDamage)) armorDamage[id] = 0;
               wearBtn.textContent = 'Remove';
               wearStatus.textContent = '▲ currently worn';
               wearStatus.style.color = 'var(--blue)';
@@ -7845,6 +8136,7 @@ document.addEventListener('keydown', function(e) {
               badge.style.outline = '';
               toast(name + ' removed', 'var(--text-muted)');
             }
+            renderArmorBars();
             rebuildTracks();
             if (Object.values(wornArmor).reduce((s,a) => s + (a.fatigueCost||0), 0) > 0) {
               applyArmorFatigueOverlay();
@@ -7857,17 +8149,17 @@ document.addEventListener('keydown', function(e) {
             syncArmorWear();
           });
 
-         // Expose a forceUnwear hook so destroyArmor can reset the closure state
+         // Expose a forceUnwear hook so destroyArmorPiece can reset the closure state
 div._forceUnwear = () => {
   if (armorWorn) {
     armorWorn = false;
     div._armorWorn = false;
-    delete wornArmor[id];       // ← removes armor from global tracking object
+    delete wornArmor[id];
     wearBtn.textContent = 'Wear';
     wearStatus.textContent = '— not worn';
     wearStatus.style.color = 'var(--text-muted)';
     badge.style.outline = '';
-    rebuildTracks();             // ← collapses the extra fortitude buffer boxes
+    rebuildTracks();
   }
 };          // Apply on load if previously worn
           if (armorWorn) {
@@ -7916,16 +8208,26 @@ div._forceUnwear = () => {
 
           // ── KIND ROW ──
           const kindRow = document.createElement('div');
-          kindRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.4rem;';
+          kindRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin-bottom:0.4rem;';
 
           const kindFg = document.createElement('div'); kindFg.className = 'inv-fg';
           const kindLbl = document.createElement('div'); kindLbl.className = 'inv-sub-label'; kindLbl.textContent = 'Consumable Kind';
           const kindSel = document.createElement('select'); kindSel.className = 'inv-field-sel'; kindSel.setAttribute('data-key','conKind');
-          [['other','Other'],['food','Food (heals wounds)'],['water','Water (heals fatigue)']].forEach(([v,l]) => {
+          [['other','Other'],['food','Food (heals wounds)'],['water','Water (heals fatigue)'],['material','Material (repairs armor)']].forEach(([v,l]) => {
             const o = document.createElement('option'); o.value = v; o.textContent = l; kindSel.appendChild(o);
           });
           kindSel.value = d.conKind || 'other';
           kindFg.appendChild(kindLbl); kindFg.appendChild(kindSel);
+
+          // Material sub-type — shown only for 'material' kind
+          const matFg = document.createElement('div'); matFg.className = 'inv-fg';
+          const matLbl = document.createElement('div'); matLbl.className = 'inv-sub-label'; matLbl.textContent = 'Material Type';
+          const matSel = document.createElement('select'); matSel.className = 'inv-field-sel'; matSel.setAttribute('data-key','conMatType');
+          [['metal','Metal'],['leather','Leather'],['cloth','Cloth'],['wood','Wood'],['bone','Bone'],['other','Other']].forEach(([v,l]) => {
+            const o = document.createElement('option'); o.value = v; o.textContent = l; matSel.appendChild(o);
+          });
+          matSel.value = d.conMatType || 'metal';
+          matFg.appendChild(matLbl); matFg.appendChild(matSel);
 
           // Heal amount field — shown for food/water only
           const healFg = document.createElement('div'); healFg.className = 'inv-fg';
@@ -7937,7 +8239,7 @@ div._forceUnwear = () => {
           healFg.appendChild(healLbl); healFg.appendChild(healInp);
           healFg.id = 'heal-fg-' + id;
 
-          kindRow.appendChild(kindFg); kindRow.appendChild(healFg);
+          kindRow.appendChild(kindFg); kindRow.appendChild(matFg); kindRow.appendChild(healFg);
           el.appendChild(kindRow);
 
           // Other: free-text effect fields; food/water: label only
@@ -7956,15 +8258,19 @@ div._forceUnwear = () => {
           function updateKindUI() {
             const kind = kindSel.value;
             const isAuto = kind === 'food' || kind === 'water';
+            const isMaterial = kind === 'material';
+            matFg.style.display = isMaterial ? '' : 'none';
             healFg.style.display = isAuto ? '' : 'none';
-            effectWrap.style.display = isAuto ? 'none' : '';
-            autoDesc.style.display = isAuto ? '' : 'none';
+            effectWrap.style.display = (isAuto || isMaterial) ? 'none' : '';
+            autoDesc.style.display = (isAuto || isMaterial) ? '' : 'none';
             if (kind === 'food') {
               healLbl.textContent = 'Wounds healed';
               autoDesc.textContent = '▸ On use: heals wounds from wound pool (filled → cleared)';
             } else if (kind === 'water') {
               healLbl.textContent = 'Fatigue healed';
               autoDesc.textContent = '▸ On use: removes fatigue slots (filled → cleared)';
+            } else if (isMaterial) {
+              autoDesc.textContent = '▸ On use: opens repair dialog — requires matching armor material & Improvised Repair trait or a mechanic/blacksmith.';
             }
           }
 
@@ -8081,6 +8387,22 @@ div._forceUnwear = () => {
           }
 
           useBtn.addEventListener('click', () => {
+            // Materials open the repair modal first — only consume on confirm
+            if (kindSel.value === 'material') {
+              const matType = matSel.value;
+              openMaterialRepairModal(matType, function() {
+                // On repair confirmed — consume one use
+                let rem = parseInt(usesRemaining.dataset.remaining, 10);
+                if (rem <= 0) return;
+                rem--;
+                usesRemaining.dataset.remaining = rem;
+                const max = parseInt(usesRemaining.dataset.max, 10);
+                usesRemaining.textContent = rem + ' / ' + max;
+                updateUseBarState();
+                if (rem <= 0 && renewSel.value === 'no') setTimeout(() => div.remove(), 800);
+              });
+              return;
+            }
             let rem = parseInt(usesRemaining.dataset.remaining, 10);
             if (rem <= 0) return;
             rem--;
@@ -8195,13 +8517,14 @@ div._forceUnwear = () => {
           name:gv('name'), qty:gv('qty'), type:gv('type'), rarity:gv('rarity'),
           description:gv('description'), source:gv('source'), value:gv('value'), notes:gv('notes'),
           wpnType:gv('wpnType'), wpnWounds:gv('wpnWounds'), wpnModifier:gv('wpnModifier'), wpnRange:gv('wpnRange'),
-          wpnSpecial:gv('wpnSpecial'), wpnTags:getTags('wpnTags'), wpnEquipped:wpnEquipped, wpnLinkedActions:wpnLinkedActions, wpnHand:wpnHand,
+          wpnSpecial:gv('wpnSpecial'), wpnTags:getTags('wpnTags'), wpnEquipped:wpnEquipped, wpnLinkedActions:wpnLinkedActions, wpnHand:wpnHand, wpnArmorHP:gv('wpnArmorHP'),
           armFortitude:gv('armFortitude'), armVigor:gv('armVigor'), armFatigue:gv('armFatigue'), armWorn:armWorn,
-          armSpecial:gv('armSpecial'), armTags:getTags('armTags'),
+          armSlot:gv('armSlot'), armSide:gv('armSide'),
+          armSpecial:gv('armSpecial'), armTags:getTags('armTags'), armMaterial:gv('armMaterial'),
           tlStat:gv('tlStat'), tlReq:gv('tlReq'), tlUse:gv('tlUse'), toolTags:getTags('toolTags'),
           conUses:gv('conUses'), conAction:gv('conAction'), conDuration:gv('conDuration'),
           conEffect:gv('conEffect'), conDrawback:gv('conDrawback'), conRenewable:gv('conRenewable'),
-          conKind:gv('conKind'), conHealAmt:gv('conHealAmt'),
+          conKind:gv('conKind'), conHealAmt:gv('conHealAmt'), conMatType:gv('conMatType'),
           conUsesRemaining:(()=>{ const el = item.querySelector('.con-uses-remaining'); return el ? el.dataset.remaining : null; })(),
           arcWeight:gv('arcWeight'), arcSystem:gv('arcSystem'), arcEffect:gv('arcEffect'),
           arcAttune:gv('arcAttune'), arcTags:getTags('arcTags'),
@@ -9324,6 +9647,7 @@ function importJSON(fileInputOrFile) {
         const iconMap = {
           'actions-body': 'actions-collapse-icon',
           'inventory-body': 'inventory-collapse-icon',
+          'armor-body': 'armor-collapse-icon',
           'essential-body': 'essential-collapse-icon',
           'weapon-actions-body': 'weapon-actions-collapse-icon'
         };
@@ -9439,8 +9763,11 @@ function importJSON(fileInputOrFile) {
           if (div && div._forceUnwear) div._forceUnwear();
           delete wornArmor[id];
         }
+        // Clean up per-piece armor state so deleted items leave no ghost bars
+        delete armorDamage[id];
+        armorDestroyed.delete(id);
         _origRemoveItem(id);
-        if (isArmor) rebuildTracks();
+        if (isArmor) { renderArmorBars(); rebuildTracks(); }
         setTimeout(() => { updateActionSlots(); updateCarryCapacity(); }, 0);
       };
 
@@ -9616,6 +9943,93 @@ function importJSON(fileInputOrFile) {
         });
       }
 
+      /* ══════════════════════════════════════════════
+         GAUNTLET → HAND SLOT OCCUPANCY
+         Gauntlet-type weapons occupy the hands armor
+         slot when equipped. Track conflicts with worn
+         hand armor and show warnings both ways.
+      ══════════════════════════════════════════════ */
+      // gauntletHandSlots: 'left'|'right'|'both'|null → { name }
+      const gauntletHandSlots = { left: null, right: null };
+
+      function syncGauntletHandSlot(equipped, hand, name) {
+        // Update gauntletHandSlots
+        if (equipped) {
+          if (hand === 'both' || hand === 'left')  gauntletHandSlots.left  = name;
+          if (hand === 'both' || hand === 'right') gauntletHandSlots.right = name;
+        } else {
+          // Only clear slots that belong to this weapon
+          if ((hand === 'both' || hand === 'left')  && gauntletHandSlots.left  === name) gauntletHandSlots.left  = null;
+          if ((hand === 'both' || hand === 'right') && gauntletHandSlots.right === name) gauntletHandSlots.right = null;
+        }
+        refreshGauntletConflicts();
+      }
+
+      function refreshGauntletConflicts() {
+        // Hands slot removed — gauntlets are the hand armor. Nothing to conflict-check.
+        updateArmorWornCounter();
+      }
+
+      /* ══════════════════════════════════════════════
+         ARMOR PIECE LIST — separate armor section
+         Each piece is a dedicated armor-type inv item
+      ══════════════════════════════════════════════ */
+      function updateArmorWornCounter() {
+        const counter = document.getElementById('armor-worn-counter');
+        if (!counter) return;
+        const total = document.querySelectorAll('#armor-pieces-list .inventory-item').length;
+        const worn = Object.keys(wornArmor).filter(id => document.getElementById(id) && document.getElementById(id).closest('#armor-pieces-list')).length;
+        counter.textContent = total > 0 ? (worn > 0 ? worn + ' worn · ' : '') + total + ' piece' + (total !== 1 ? 's' : '') : '';
+      }
+
+      function addArmorPieceItem(data) {
+        const list = document.getElementById('armor-pieces-list');
+        if (!list) return;
+        // Force type to 'armor' so the armor panel is pre-selected
+        const d = Object.assign({}, data || {}, { type: 'armor' });
+        addInventoryItem(d);
+        // Move the newly created item from inventory-list to armor-pieces-list
+        const invList = document.getElementById('inventory-list');
+        if (invList && invList.lastElementChild) {
+          const item = invList.lastElementChild;
+          list.appendChild(item);
+          // Hide the Item Type / Rarity row — armor pieces are always armor
+          const typeRow = item.querySelector('.inv-type-row');
+          if (typeRow) typeRow.style.display = 'none';
+        }
+        updateArmorWornCounter();
+      }
+
+      // Patch wornArmor writes to also update counter
+      const _origSyncArmorWear_patch = renderArmorBars;
+      renderArmorBars = function() {
+        _origSyncArmorWear_patch();
+        updateArmorWornCounter();
+      };
+
+      // Patch serialize/deserialize to include armor pieces list
+      const _origSerSheet_armor = serializeSheet;
+      serializeSheet = function() {
+        const data = _origSerSheet_armor();
+        const armorItems = [];
+        document.querySelectorAll('#armor-pieces-list .inventory-item').forEach(item => {
+          armorItems.push(serializeInventoryItem(item));
+        });
+        data.armorPieces = armorItems;
+        return data;
+      };
+      const _origDesSheet_armor = deserializeSheet;
+      deserializeSheet = function(data) {
+        _origDesSheet_armor(data);
+        // Clear and restore armor pieces list
+        const list = document.getElementById('armor-pieces-list');
+        if (list) list.innerHTML = '';
+        if (data && data.armorPieces && Array.isArray(data.armorPieces)) {
+          data.armorPieces.forEach(item => addArmorPieceItem(item));
+        }
+        updateArmorWornCounter();
+      };
+
       function rankUpEssential(actionId) {
         const rank = essentialRanks[actionId];
         if (rank >= EA_MAX_RANK) { toast('Already at Master rank', 'var(--red)'); return; }
@@ -9681,7 +10095,124 @@ function importJSON(fileInputOrFile) {
       updateBacklashPanel();
       renderEssentialActions();
       updateWeaponActionsCounter();
+
+      // ── ARMOR REPAIR MODAL ──
+      // Redirects to the unified per-piece repair modal
+      function openRepairModal(armorItemId) { openArmorPieceRepair(armorItemId); }
+
+      // Called when using a Material consumable — find matching armor and open its repair modal
+      function openMaterialRepairModal(matType, onConfirm) {
+        const matLabel = { metal: 'Metal', leather: 'Leather', cloth: 'Cloth', wood: 'Wood', bone: 'Bone', other: 'Other' }[matType] || matType;
+        const matchingArmor = findArmorNeedingRepair(matType);
+        if (matchingArmor) {
+          // Delegate to per-piece repair, then call onConfirm
+          const orig = onConfirm;
+          openArmorPieceRepair(matchingArmor);
+          // onConfirm (consumable use) fires after modal closes — patch via a one-shot close wrapper
+          const realClose = closeRepairModal;
+          closeRepairModal = function() { realClose(); closeRepairModal = realClose; orig(); };
+        } else {
+          const modal = document.getElementById('armor-repair-modal');
+          const body = document.getElementById('armor-repair-modal-body');
+          const btns = document.getElementById('armor-repair-modal-btns');
+          btns.innerHTML = '';
+          body.innerHTML = 'No worn or damaged armor with material type <span style="color:var(--text);">' + matLabel + '</span> was found.<br><br><span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);">Set an armor item\'s Material field to ' + matLabel + ' and wear it first.</span>';
+          btns.appendChild(makeModalBtn('OK', 'var(--border-bright)', closeRepairModal, true));
+          modal.style.display = 'flex';
+        }
+      }
+
+      // Find the ID of a worn or destroyed armor item that matches a given material
+      function findArmorNeedingRepair(matType) {
+        const candidates = [...Object.keys(wornArmor), ...armorDestroyed];
+        for (const id of candidates) {
+          const div = document.getElementById(id);
+          if (!div) continue;
+          const matEl = div.querySelector('[data-key="armMaterial"]');
+          if (matEl && matEl.value === matType) return id;
+        }
+        return null;
+      }
+
+      // Check if inventory has a material consumable of the given type with uses remaining
+      function checkHasMaterial(matType) {
+        const items = document.querySelectorAll('#inventory-list .inventory-item');
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          var kind = item.querySelector('[data-key="conKind"]');
+          var mat = item.querySelector('[data-key="conMatType"]');
+          var rem = item.querySelector('.con-uses-remaining');
+          if (kind && kind.value === 'material' && mat && mat.value === matType) {
+            if (rem && parseInt(rem.dataset.remaining, 10) > 0) return true;
+          }
+        }
+        return false;
+      }
+
+      // Consume one use of the first matching material in inventory
+      function consumeMaterial(matType) {
+        const items = document.querySelectorAll('#inventory-list .inventory-item');
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          var kind = item.querySelector('[data-key="conKind"]');
+          var mat = item.querySelector('[data-key="conMatType"]');
+          var rem = item.querySelector('.con-uses-remaining');
+          if (kind && kind.value === 'material' && mat && mat.value === matType && rem) {
+            var remaining = parseInt(rem.dataset.remaining, 10);
+            if (remaining > 0) {
+              remaining--;
+              var max = parseInt(rem.dataset.max, 10);
+              rem.dataset.remaining = remaining;
+              rem.textContent = remaining + ' / ' + max;
+              if (remaining <= 0) {
+                // Auto-remove if single-use
+                var renewEl = item.querySelector('[data-key="conRenewable"]');
+                if (renewEl && renewEl.value === 'no') setTimeout(function(el) { return function() { el.remove(); }; }(item), 600);
+              }
+              return;
+            }
+          }
+        }
+      }
+
+      function closeRepairModal() {
+        document.getElementById('armor-repair-modal').style.display = 'none';
+      }
+
+      function makeModalBtn(label, borderColor, onClick, muted) {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.style.cssText = 'background:none;border:1px solid ' + borderColor + ';color:' + (muted ? 'var(--text-muted)' : 'var(--blue)') + ';font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.15em;padding:0.35rem 1rem;cursor:pointer;text-transform:uppercase;transition:opacity 0.15s;';
+        b.addEventListener('click', onClick);
+        return b;
+      }
+
+      function checkHasImprovisedRepair() {
+        const occKey = document.getElementById('occ-select') ? document.getElementById('occ-select').value : '';
+        if (occKey && occTraitStates) {
+          const removed = occTraitStates[occKey] || new Set();
+          const occ = occupations[occKey];
+          if (occ && occ.traits && occ.traits.includes('Improvised Repair') && !removed.has('Improvised Repair')) {
+            return true;
+          }
+        }
+        if (customTraits && customTraits.some(function(t) { return t.name.toLowerCase().includes('improvised repair'); })) {
+          return true;
+        }
+        return false;
+      }
+
 </script>
+
+<!-- ══ ARMOR REPAIR MODAL ══ -->
+<div class="modal-overlay" id="armor-repair-modal" style="display:none;" onclick="if(event.target===this)closeRepairModal()">
+  <div style="background:var(--surface);border:1px solid var(--border-bright);padding:2rem;max-width:380px;width:100%;position:relative;">
+    <div style="font-family:var(--font-display);font-size:0.75rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--blue);margin-bottom:0.75rem;">&#x1F527; Armor Repair</div>
+    <div id="armor-repair-modal-body" style="font-family:var(--font-body);font-size:1rem;color:var(--text-dim);line-height:1.7;margin-bottom:1.5rem;"></div>
+    <div id="armor-repair-modal-btns" style="display:flex;gap:0.6rem;justify-content:flex-end;flex-wrap:wrap;"></div>
+    <button onclick="closeRepairModal()" style="position:absolute;top:0.75rem;right:0.9rem;background:none;border:none;color:var(--text-muted);font-size:1rem;cursor:pointer;line-height:1;">&#x2715;</button>
+  </div>
+</div>
+
 </body>
 </html>
-
