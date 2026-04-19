@@ -87,34 +87,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    transition: transform 0.25s ease;
   }
-
-  .sidebar.collapsed { transform: translateX(-250px); }
-
-  /* ── SIDEBAR COLLAPSE TOGGLE TAB ── */
-  .sidebar-collapse-tab {
-    position: fixed;
-    top: 50%;
-    left: 250px;
-    transform: translateY(-50%);
-    z-index: 101;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-left: none;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    padding: 0.6rem 0.3rem;
-    cursor: pointer;
-    writing-mode: vertical-rl;
-    letter-spacing: 0.15em;
-    transition: left 0.25s ease, color 0.15s, background 0.15s;
-    line-height: 1;
-    user-select: none;
-  }
-  .sidebar-collapse-tab:hover { color: var(--ice); background: var(--surface2); }
-  .sidebar.collapsed ~ .sidebar-collapse-tab { left: 0; border-left: 1px solid var(--rule); border-right: none; }
 
   .sidebar::-webkit-scrollbar { width: 3px; }
   .sidebar::-webkit-scrollbar-thumb { background: var(--border-bright); }
@@ -195,8 +168,6 @@
     z-index: 1;
     transition: margin-left 0.25s ease;
   }
-  .sidebar.collapsed ~ .sidebar-collapse-tab ~ .main,
-  body.sidebar-collapsed .main { margin-left: 0; }
 
   /* ── HERO ── */
   .hero {
@@ -1319,7 +1290,6 @@
 body.sheet-mode .sidebar { display: none !important; }
 body.sheet-mode .main { display: none !important; }
 body.sheet-mode .mobile-toggle { display: none !important; }
-body.sheet-mode .sidebar-collapse-tab { display: none !important; }
 body.sheet-mode #sheet-tab { display: block !important; margin-left: 0; }
 
 /* Sheet floating nav button */
@@ -2784,8 +2754,6 @@ body.sheet-mode .sheet-nav-btn { display: block; }
   </div>
   </div>
 </nav>
-
-<button class="sidebar-collapse-tab" id="sidebar-collapse-tab" onclick="toggleSidebarCollapse()" title="Toggle sidebar">☰</button>
 
 <!-- GUIDE TAB -->
 <div id="guide-tab">
@@ -6149,32 +6117,6 @@ function resetDisplaySettings() {
 
 <script>
 /* ── TAB SWITCHING ── */
-/* ── SIDEBAR COLLAPSE ── */
-function toggleSidebarCollapse() {
-  const sidebar = document.getElementById('sidebar');
-  const tab     = document.getElementById('sidebar-collapse-tab');
-  const main    = document.querySelector('.main');
-  const collapsed = sidebar.classList.toggle('collapsed');
-  document.body.classList.toggle('sidebar-collapsed', collapsed);
-  if (main) main.style.marginLeft = collapsed ? '0' : '250px';
-  tab.textContent = collapsed ? '☰' : '☰';
-  tab.title = collapsed ? 'Show sidebar' : 'Hide sidebar';
-  try { localStorage.setItem('sidebar-collapsed', collapsed ? '1' : '0'); } catch(e) {}
-}
-
-// Restore collapse state on load
-(function() {
-  try {
-    if (localStorage.getItem('sidebar-collapsed') === '1') {
-      const sidebar = document.getElementById('sidebar');
-      const main    = document.querySelector('.main');
-      if (sidebar) sidebar.classList.add('collapsed');
-      document.body.classList.add('sidebar-collapsed');
-      if (main) main.style.marginLeft = '0';
-    }
-  } catch(e) {}
-})();
-
 function switchTab(tab) {
   // Close inventory modal when switching tabs
   const invModal = document.getElementById('inventory-modal');
@@ -7427,7 +7369,6 @@ document.addEventListener('keydown', function(e) {
       const boostableStats = ['Vigor','Fortitude','Might','Expertise','Wit','Insight'];
       const allStats = ['vigor','fortitude','might','expertise','wit','insight','intuition','charm'];
       const beyondMasterTiers = ['enhanced','remarkable','extraordinary','legendary'];
-      const trainingCosts = {deficient:3,average:5,capable:8,proficient:12,expert:18,master:25,enhanced:25,remarkable:25,extraordinary:25};
 
       // Backlash die table: 0 restrictions = d10, 1 = d8, 2 = d6, 3 = d4, 4+ = none
       const backlashDice = ['d10','d8','d6','d4','none'];
@@ -8234,7 +8175,10 @@ document.addEventListener('keydown', function(e) {
 
       function getStatCost(stat) {
         const isMeta = activeTypes.has('meta') && typeof getMetaBoostedStats === 'function' && getMetaBoostedStats().has(stat);
-        return isMeta ? 4 : 2;
+        const sel = document.getElementById('stat-' + stat);
+        const currentIdx = sel ? tierOrder.indexOf(sel.value) : 0;
+        const baseCost = (currentIdx + 1) * 2;
+        return isMeta ? baseCost * 2 : baseCost;
       }
 
       function updateStatSpendBtn(stat) {
