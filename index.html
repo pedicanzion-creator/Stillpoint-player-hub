@@ -15484,7 +15484,21 @@ function importJSON(fileInputOrFile) {
 
       function getCarriedWeight() {
         let w = 0;
-        document.querySelectorAll('#inventory-list .inventory-item').forEach(item => {
+        // All locations where a character physically carries items contribute to weight
+        const weightSelectors = [
+          '#inventory-list .inventory-item',
+          '#hand-list .inventory-item',
+          '#sheath-list .inventory-item',
+          '#body-slot-helm .inventory-item',
+          '#body-slot-body .inventory-item',
+          '#body-slot-legs .inventory-item',
+          '#body-slot-feet .inventory-item',
+          '#accessories-rings .inventory-item',
+          '#accessories-necklaces .inventory-item',
+          '#accessories-mask .inventory-item',
+          '#accessories-charms .inventory-item',
+        ].join(', ');
+        document.querySelectorAll(weightSelectors).forEach(item => {
           const val = item.querySelector('[data-key="itemSize"]')?.value;
           w += val !== undefined && val !== '' ? parseInt(val, 10) : 1;
         });
@@ -15500,6 +15514,7 @@ function importJSON(fileInputOrFile) {
         _bagUpgradeSlots = Math.max(0, _bagUpgradeSlots + delta);
         updateActiveSlotDisplay();
         checkEncumbrance();
+        if (typeof updateBagAddBtn === 'function') updateBagAddBtn();
         toast('Bag slots: ' + getBagSlots() + ' (' + BAG_BASE_SLOTS + ' base + ' + _bagUpgradeSlots + ' upgraded)', 'var(--teal)');
       }
 
@@ -15557,6 +15572,9 @@ function importJSON(fileInputOrFile) {
           modal.textContent = 'Hands ' + handUsed + '/2 · Slots ' + bagUsed + '/' + bagSlots + ' · Weight ' + weight + '/' + weightLim;
           modal.style.color = (overWeight > 0 || bagOver) ? 'var(--accent)' : 'var(--text-muted)';
         }
+
+        // Keep the add-item button and full notice in sync
+        if (typeof updateBagAddBtn === 'function') updateBagAddBtn();
       }
 
       let _slowedByEncumbrance = false;
@@ -15564,7 +15582,7 @@ function importJSON(fileInputOrFile) {
 
       function checkEncumbrance() {
         const over = getOverWeight();
-        const bagFull = document.querySelectorAll('#inventory-list .inventory-item').length > getBagSlots();
+        const bagFull = getUsedBagSlots() >= getBagSlots();
 
         if (over > 0) {
           // Slowed scales: +2 fatigue per weight unit over limit
@@ -15673,9 +15691,61 @@ function importJSON(fileInputOrFile) {
       // ── BAG ──
       let _addingToBag = false;
       function addBagItem(data) {
+        const bagSlots = getBagSlots();
+        const bagUsed  = getUsedBagSlots();
+        if (bagUsed >= bagSlots) {
+          toast('No more items can be carried — bag is full (' + bagUsed + '/' + bagSlots + ' slots)', 'var(--red)');
+          updateBagAddBtn();
+          return;
+        }
         addInventoryItem(data);
         updateActiveSlotDisplay();
+        updateBagAddBtn();
         checkEncumbrance();
+      }
+
+      function updateBagAddBtn() {
+        const bagSlots = getBagSlots();
+        const bagUsed  = getUsedBagSlots();
+        const full     = bagUsed >= bagSlots;
+        const addBtn   = document.querySelector('#inventory-scroll')?.closest('[style*="flex-direction:column"]')
+                         ?.querySelector?.('button.add-btn[onclick*="addBagItem"]');
+        // Use the header add btn (outside scroll area)
+        const allAddBtns = document.querySelectorAll('button[onclick="addBagItem()"]');
+        allAddBtns.forEach(btn => {
+          if (full) {
+            btn.disabled = true;
+            btn.title = 'No more items can be carried';
+            btn.style.opacity = '0.4';
+            btn.style.cursor = 'not-allowed';
+            btn.style.borderColor = 'var(--red)';
+            btn.style.color = 'var(--red)';
+          } else {
+            btn.disabled = false;
+            btn.title = '';
+            btn.style.opacity = '';
+            btn.style.cursor = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+          }
+        });
+
+        // Show/hide the "No more items can be carried" notice in the bag scroll area
+        const scrollEl = document.getElementById('inventory-scroll');
+        if (scrollEl) {
+          let notice = document.getElementById('bag-full-notice');
+          if (full) {
+            if (!notice) {
+              notice = document.createElement('div');
+              notice.id = 'bag-full-notice';
+              notice.style.cssText = 'font-family:var(--font-mono);font-size:0.58rem;letter-spacing:0.15em;color:var(--red);text-align:center;padding:0.6rem 0.5rem;border:1px solid rgba(196,92,74,0.3);background:rgba(196,92,74,0.06);margin-top:0.5rem;text-transform:uppercase;';
+              notice.textContent = 'No more items can be carried';
+              scrollEl.appendChild(notice);
+            }
+          } else {
+            if (notice) notice.remove();
+          }
+        }
       }
 
       /* ══════════════════════════════════════════════
@@ -15763,14 +15833,14 @@ function importJSON(fileInputOrFile) {
         
         // Finally remove the item from DOM
         _origRemoveItem(id);
-        setTimeout(() => { updateActionSlots(); updateCarryCapacity(); updateAccessoryCounters(); if (inSheath) updateSheathCounter(); checkEncumbrance(); }, 0);
+        setTimeout(() => { updateActionSlots(); updateCarryCapacity(); updateAccessoryCounters(); if (inSheath) updateSheathCounter(); checkEncumbrance(); if (typeof updateBagAddBtn === 'function') updateBagAddBtn(); }, 0);
       };
 
       /* ── Patch addInventoryItem to refresh carry after add ── */
       const _origAddInventoryItem = addInventoryItem;
       addInventoryItem = function(data) {
         _origAddInventoryItem(data);
-        setTimeout(() => updateCarryCapacity(), 0);
+        setTimeout(() => { updateCarryCapacity(); if (typeof updateBagAddBtn === 'function') updateBagAddBtn(); }, 0);
       };
 
       /* ── Wire item library import ── */
