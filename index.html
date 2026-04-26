@@ -2680,183 +2680,6 @@ body.sheet-mode .sheet-nav-btn { display: block; }
     flex-wrap: wrap;
     margin-top: 0.4rem;
   }
-
-/* ══════════════════════════════════════
-   MOBILE OVERRIDES — max-width: 768px
-   ══════════════════════════════════════ */
-@media (max-width: 768px) {
-
-  /* ── TOUCH TARGETS ── */
-  button, .add-btn, .remove-btn, select, input[type="text"], input[type="number"] {
-    min-height: 36px;
-  }
-  .add-btn { padding: 0.4rem 0.85rem !important; font-size: 0.62rem !important; }
-  .remove-btn { padding: 6px 10px !important; }
-
-  /* ── SIDEBAR ── */
-  .sidebar { width: 85vw; max-width: 300px; }
-  .sidebar.collapsed { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0) !important; }
-  .sidebar-collapse-tab { display: none !important; }
-
-  /* ── MEMORY SIDEBAR ── */
-  .memory-sidebar {
-    left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    z-index: 10200 !important;
-  }
-
-  /* ── PHASE BAR ── */
-  .phase-center {
-    position: static !important;
-    transform: none !important;
-    width: 100%;
-    justify-content: center;
-    order: 10;
-  }
-  .phase-pass-main { font-size: 0.58rem !important; padding: 0.38rem 0.7rem !important; }
-
-  /* ── TAKE DAMAGE FAB ── */
-  #take-damage-fab {
-    bottom: 0.75rem !important;
-    right: 0.75rem !important;
-  }
-  #take-damage-input { width: 52px !important; }
-
-  /* ── MODAL OVERLAYS (generic) ── */
-  .modal-overlay {
-    padding: 0 !important;
-    align-items: flex-end !important;
-  }
-  .modal-overlay > div:not(#inventory-modal > div) {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: 92vh !important;
-    border-radius: 0 !important;
-  }
-
-  /* ── SLOTS MODAL (save/load) ── */
-  .slots-modal { max-width: 100% !important; border-radius: 0; }
-  .slot-row { grid-template-columns: 1fr auto auto !important; }
-  .slot-row-btn { font-size: 0.6rem !important; padding: 0.28rem 0.45rem !important; }
-
-  /* ── INVENTORY MODAL ── */
-  #inventory-modal {
-    align-items: flex-start !important;
-    padding: 0 !important;
-  }
-  #inventory-modal > div {
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    border-radius: 0 !important;
-  }
-
-  /* Three columns → single column with tab nav */
-  #inv-col-layout {
-    grid-template-columns: 1fr !important;
-  }
-  .inv-col { display: none !important; }
-  .inv-col.inv-col-active { display: flex !important; }
-
-  /* Tab nav bar — only visible on mobile */
-  #inv-mobile-tabs { display: flex !important; }
-
-  /* Inventory item grids */
-  .inv-g3 { grid-template-columns: 1fr 1fr !important; }
-  .inv-top { grid-template-columns: 1fr auto auto auto auto auto !important; }
-
-  /* ── SHOP MODAL ── */
-  #shop-purchase-modal > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: 92vh !important;
-    border-radius: 0 !important;
-  }
-
-  /* ── ARMOR REPAIR MODAL ── */
-  #armor-repair-modal > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    border-radius: 0 !important;
-  }
-
-  /* ── CHARACTER NOTES MODAL ── */
-  #char-notes-modal > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: 92vh !important;
-    border-radius: 0 !important;
-  }
-
-  /* ── BEGIN SCENARIO MODAL ── */
-  #begin-scenario-modal > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: 92vh !important;
-    overflow-y: auto;
-    border-radius: 0 !important;
-  }
-
-  /* ── COLOR MODAL ── */
-  .color-modal-overlay > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: 92vh !important;
-    border-radius: 0 !important;
-  }
-
-  /* ── HEADER SAVE BAR ── */
-  .save-bar { flex-wrap: wrap; gap: 0.35rem; }
-  .save-bar-actions { margin-left: 0 !important; flex-wrap: wrap; }
-  #active-slots-counter { font-size: 0.48rem !important; }
-
-  /* ── STAT GRID ── */
-  .stat-grid { grid-template-columns: 1fr 1fr !important; }
-
-  /* ── TRAINING GRID ── */
-  .training-btns { grid-template-columns: 1fr 1fr !important; }
-  .tab-train-btns { grid-template-columns: 1fr 1fr !important; }
-
-  /* ── ADDITIVE LIST (actions/skills) ── */
-  .additive-list { grid-template-columns: 1fr !important; }
-
-  /* ── WOUND / FORTITUDE TRACK ── */
-  .wound-track, .fortitude-track { flex-wrap: wrap; }
-
-  /* ── SCROLL RESTORE on overflowing fixed panels ── */
-  body.inv-open { overflow: hidden; }
-}
-
-/* ── INVENTORY MOBILE TAB NAV (hidden on desktop) ── */
-#inv-mobile-tabs {
-  display: none;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-#inv-mobile-tabs button {
-  flex: 1;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  padding: 0.55rem 0.25rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  min-height: 40px;
-}
-#inv-mobile-tabs button.inv-tab-active {
-  color: var(--ice);
-  border-bottom-color: var(--ice);
-  background: var(--ice-glow);
-}
-#inv-mobile-tabs button.inv-tab-body-active { color: var(--blue); border-bottom-color: var(--blue); background: rgba(168,216,234,0.05); }
-#inv-mobile-tabs button.inv-tab-bag-active  { color: var(--gold); border-bottom-color: var(--gold); background: var(--gold-glow); }
 </style>
 </head>
 <body>
@@ -4620,7 +4443,7 @@ body.sheet-mode .sheet-nav-btn { display: block; }
           <button class="sbar-btn btn-save" onclick="saveSheet()">Save</button>
           <button class="sbar-btn btn-clear" onclick="clearSlot()">Clear slot</button>
           <button class="sbar-btn btn-export" onclick="exportJSON()">Export JSON</button>
-          <label class="sbar-btn" style="cursor:pointer;">Import JSON<input type="file" accept=".json" style="display:none;" onchange="importJSON(this.files[0])" /></label>
+          <label class="sbar-btn" style="cursor:pointer;">Import JSON<input type="file" accept=".json" style="display:none;" onchange="var _f=this.files[0]; this.value=''; importJSON(_f);" /></label>
         </div>
       </div>
 
@@ -14659,7 +14482,7 @@ div._forceUnwear = () => {
         card.className = 'mage-system-card';
         card.id = 'meta-card-' + id;
         card.dataset.type = data.type;
-        if (data.type === 'simple') card.dataset.stat = data.stat;
+        if (data.type === 'simple') { card.dataset.stat = data.stat; card.dataset.tier = data.tier || ''; }
 
         // Header
         const hdr = document.createElement('div');
@@ -14686,7 +14509,7 @@ div._forceUnwear = () => {
           // Simple — show locked stat info
           const info = document.createElement('div');
           info.style.cssText = 'font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);padding:0.5rem 0;letter-spacing:0.08em;';
-          info.textContent = '🔒 ' + data.stat.charAt(0).toUpperCase() + data.stat.slice(1) + ' locked at ' + data.tier.charAt(0).toUpperCase() + data.tier.slice(1);
+          info.textContent = '🔒 ' + (data.stat ? data.stat.charAt(0).toUpperCase() + data.stat.slice(1) : '?') + ' locked at ' + (data.tier ? data.tier.charAt(0).toUpperCase() + data.tier.slice(1) : '?');
           card.appendChild(info);
         } else {
           // Complex — description + skills
@@ -14789,7 +14612,7 @@ div._forceUnwear = () => {
           const type = card.dataset.type;
           const name = card.querySelector('.mage-system-num')?.textContent || '';
           if (type === 'simple') {
-            cards.push({ type, name, stat: card.dataset.stat });
+            cards.push({ type, name, stat: card.dataset.stat, tier: card.dataset.tier || '' });
           } else {
             const descEl = card.querySelector('[style*="font-body"]');
             const desc = descEl ? descEl.textContent : '';
@@ -15661,21 +15484,7 @@ function importJSON(fileInputOrFile) {
 
       function getCarriedWeight() {
         let w = 0;
-        // All locations where a character physically carries items contribute to weight
-        const weightSelectors = [
-          '#inventory-list .inventory-item',
-          '#hand-list .inventory-item',
-          '#sheath-list .inventory-item',
-          '#body-slot-helm .inventory-item',
-          '#body-slot-body .inventory-item',
-          '#body-slot-legs .inventory-item',
-          '#body-slot-feet .inventory-item',
-          '#accessories-rings .inventory-item',
-          '#accessories-necklaces .inventory-item',
-          '#accessories-mask .inventory-item',
-          '#accessories-charms .inventory-item',
-        ].join(', ');
-        document.querySelectorAll(weightSelectors).forEach(item => {
+        document.querySelectorAll('#inventory-list .inventory-item').forEach(item => {
           const val = item.querySelector('[data-key="itemSize"]')?.value;
           w += val !== undefined && val !== '' ? parseInt(val, 10) : 1;
         });
@@ -15691,7 +15500,6 @@ function importJSON(fileInputOrFile) {
         _bagUpgradeSlots = Math.max(0, _bagUpgradeSlots + delta);
         updateActiveSlotDisplay();
         checkEncumbrance();
-        if (typeof updateBagAddBtn === 'function') updateBagAddBtn();
         toast('Bag slots: ' + getBagSlots() + ' (' + BAG_BASE_SLOTS + ' base + ' + _bagUpgradeSlots + ' upgraded)', 'var(--teal)');
       }
 
@@ -15749,9 +15557,6 @@ function importJSON(fileInputOrFile) {
           modal.textContent = 'Hands ' + handUsed + '/2 · Slots ' + bagUsed + '/' + bagSlots + ' · Weight ' + weight + '/' + weightLim;
           modal.style.color = (overWeight > 0 || bagOver) ? 'var(--accent)' : 'var(--text-muted)';
         }
-
-        // Keep the add-item button and full notice in sync
-        if (typeof updateBagAddBtn === 'function') updateBagAddBtn();
       }
 
       let _slowedByEncumbrance = false;
@@ -15759,7 +15564,7 @@ function importJSON(fileInputOrFile) {
 
       function checkEncumbrance() {
         const over = getOverWeight();
-        const bagFull = getUsedBagSlots() >= getBagSlots();
+        const bagFull = document.querySelectorAll('#inventory-list .inventory-item').length > getBagSlots();
 
         if (over > 0) {
           // Slowed scales: +2 fatigue per weight unit over limit
@@ -15868,61 +15673,9 @@ function importJSON(fileInputOrFile) {
       // ── BAG ──
       let _addingToBag = false;
       function addBagItem(data) {
-        const bagSlots = getBagSlots();
-        const bagUsed  = getUsedBagSlots();
-        if (bagUsed >= bagSlots) {
-          toast('No more items can be carried — bag is full (' + bagUsed + '/' + bagSlots + ' slots)', 'var(--red)');
-          updateBagAddBtn();
-          return;
-        }
         addInventoryItem(data);
         updateActiveSlotDisplay();
-        updateBagAddBtn();
         checkEncumbrance();
-      }
-
-      function updateBagAddBtn() {
-        const bagSlots = getBagSlots();
-        const bagUsed  = getUsedBagSlots();
-        const full     = bagUsed >= bagSlots;
-        const addBtn   = document.querySelector('#inventory-scroll')?.closest('[style*="flex-direction:column"]')
-                         ?.querySelector?.('button.add-btn[onclick*="addBagItem"]');
-        // Use the header add btn (outside scroll area)
-        const allAddBtns = document.querySelectorAll('button[onclick="addBagItem()"]');
-        allAddBtns.forEach(btn => {
-          if (full) {
-            btn.disabled = true;
-            btn.title = 'No more items can be carried';
-            btn.style.opacity = '0.4';
-            btn.style.cursor = 'not-allowed';
-            btn.style.borderColor = 'var(--red)';
-            btn.style.color = 'var(--red)';
-          } else {
-            btn.disabled = false;
-            btn.title = '';
-            btn.style.opacity = '';
-            btn.style.cursor = '';
-            btn.style.borderColor = '';
-            btn.style.color = '';
-          }
-        });
-
-        // Show/hide the "No more items can be carried" notice in the bag scroll area
-        const scrollEl = document.getElementById('inventory-scroll');
-        if (scrollEl) {
-          let notice = document.getElementById('bag-full-notice');
-          if (full) {
-            if (!notice) {
-              notice = document.createElement('div');
-              notice.id = 'bag-full-notice';
-              notice.style.cssText = 'font-family:var(--font-mono);font-size:0.58rem;letter-spacing:0.15em;color:var(--red);text-align:center;padding:0.6rem 0.5rem;border:1px solid rgba(196,92,74,0.3);background:rgba(196,92,74,0.06);margin-top:0.5rem;text-transform:uppercase;';
-              notice.textContent = 'No more items can be carried';
-              scrollEl.appendChild(notice);
-            }
-          } else {
-            if (notice) notice.remove();
-          }
-        }
       }
 
       /* ══════════════════════════════════════════════
@@ -16010,14 +15763,14 @@ function importJSON(fileInputOrFile) {
         
         // Finally remove the item from DOM
         _origRemoveItem(id);
-        setTimeout(() => { updateActionSlots(); updateCarryCapacity(); updateAccessoryCounters(); if (inSheath) updateSheathCounter(); checkEncumbrance(); if (typeof updateBagAddBtn === 'function') updateBagAddBtn(); }, 0);
+        setTimeout(() => { updateActionSlots(); updateCarryCapacity(); updateAccessoryCounters(); if (inSheath) updateSheathCounter(); checkEncumbrance(); }, 0);
       };
 
       /* ── Patch addInventoryItem to refresh carry after add ── */
       const _origAddInventoryItem = addInventoryItem;
       addInventoryItem = function(data) {
         _origAddInventoryItem(data);
-        setTimeout(() => { updateCarryCapacity(); if (typeof updateBagAddBtn === 'function') updateBagAddBtn(); }, 0);
+        setTimeout(() => updateCarryCapacity(), 0);
       };
 
       /* ── Wire item library import ── */
@@ -16750,17 +16503,11 @@ function importJSON(fileInputOrFile) {
         const sidebar = document.getElementById('memory-modal');
         if (!sidebar) return;
         sidebar.classList.add('memory-open');
-        const isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-          // Full-screen overlay on mobile — don't push content
-          document.body.classList.add('inv-open');
+        const isSheetMode = document.body.classList.contains('sheet-mode');
+        if (isSheetMode) {
+          document.getElementById('sheet-tab')?.style.setProperty('margin-left', '380px');
         } else {
-          const isSheetMode = document.body.classList.contains('sheet-mode');
-          if (isSheetMode) {
-            document.getElementById('sheet-tab')?.style.setProperty('margin-left', '380px');
-          } else {
-            document.querySelector('.main')?.style.setProperty('margin-left', '630px');
-          }
+          document.querySelector('.main')?.style.setProperty('margin-left', '630px');
         }
         renderEssentialActions();
         updateActionSlots();
@@ -16772,15 +16519,11 @@ function importJSON(fileInputOrFile) {
         const sidebar = document.getElementById('memory-modal');
         if (!sidebar) return;
         sidebar.classList.remove('memory-open');
-        document.body.classList.remove('inv-open');
-        const isMobile = window.innerWidth <= 768;
-        if (!isMobile) {
-          const isSheetMode = document.body.classList.contains('sheet-mode');
-          if (isSheetMode) {
-            document.getElementById('sheet-tab')?.style.setProperty('margin-left', '0');
-          } else {
-            document.querySelector('.main')?.style.setProperty('margin-left', '250px');
-          }
+        const isSheetMode = document.body.classList.contains('sheet-mode');
+        if (isSheetMode) {
+          document.getElementById('sheet-tab')?.style.setProperty('margin-left', '0');
+        } else {
+          document.querySelector('.main')?.style.setProperty('margin-left', '250px');
         }
       }
       function isMemoryOpen() {
@@ -16788,24 +16531,7 @@ function importJSON(fileInputOrFile) {
       }
       function openInventoryModal() {
         document.getElementById('inventory-modal').style.display = 'flex';
-        document.body.classList.add('inv-open');
         updateActiveSlotDisplay(); // refresh slot counter in header
-        // On mobile, default to hand tab
-        if (window.innerWidth <= 768) invSwitchTab('hand');
-      }
-
-      /* ── Mobile inventory tab switcher ── */
-      function invSwitchTab(tab) {
-        const cols = document.querySelectorAll('#inv-col-layout .inv-col');
-        cols.forEach(c => c.classList.remove('inv-col-active'));
-        const target = document.querySelector('#inv-col-layout [data-inv-col="' + tab + '"]');
-        if (target) target.classList.add('inv-col-active');
-        // Update tab button styles
-        ['hand','body','bag'].forEach(t => {
-          const btn = document.getElementById('inv-tab-' + t);
-          if (!btn) return;
-          btn.className = t === tab ? 'inv-tab-' + t + '-active inv-tab-active' : '';
-        });
       }
 
       function openCharNotesModal() {
@@ -16819,7 +16545,6 @@ function importJSON(fileInputOrFile) {
 
       function closeInventoryModal() {
         document.getElementById('inventory-modal').style.display = 'none';
-        document.body.classList.remove('inv-open');
       }
 
       function closeRepairModal() {
@@ -16864,18 +16589,11 @@ function importJSON(fileInputOrFile) {
       </div>
     </div>
 
-    <!-- Mobile tab nav (hidden on desktop via CSS) -->
-    <div id="inv-mobile-tabs">
-      <button onclick="invSwitchTab('hand')" id="inv-tab-hand" class="inv-tab-active">✋ Hand</button>
-      <button onclick="invSwitchTab('body')" id="inv-tab-body">🛡 Body</button>
-      <button onclick="invSwitchTab('bag')"  id="inv-tab-bag">🎒 Bag</button>
-    </div>
-
     <!-- Three-column body -->
-    <div id="inv-col-layout" style="display:grid;grid-template-columns:minmax(280px,1fr) minmax(300px,1fr) minmax(280px,1fr);gap:0;flex:1;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:minmax(280px,1fr) minmax(300px,1fr) minmax(280px,1fr);gap:0;flex:1;overflow:hidden;">
 
       <!-- HAND column — 2 fixed slots -->
-      <div class="inv-col inv-col-active" data-inv-col="hand" style="display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;">
+      <div style="display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;">
         <div style="padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
           <div>
             <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--red);">✋ Hand</div>
@@ -16889,7 +16607,7 @@ function importJSON(fileInputOrFile) {
       </div>
 
       <!-- BODY column — 3 fixed named armor slots -->
-      <div class="inv-col" data-inv-col="body" style="display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;">
+      <div style="display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;">
         <div style="padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0;">
           <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--blue);">🛡 Body</div>
           <div style="font-family:var(--font-mono);font-size:0.5rem;color:var(--text-muted);margin-top:2px;">Helm · Body · Legs · Feet · Sheathes</div>
@@ -16992,7 +16710,7 @@ function importJSON(fileInputOrFile) {
       </div>
 
       <!-- BAG column — upgradeable slots, weight-limited by Might -->
-      <div class="inv-col" data-inv-col="bag" style="display:flex;flex-direction:column;overflow:hidden;">
+      <div style="display:flex;flex-direction:column;overflow:hidden;">
         <div style="padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:0.4rem;">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
             <div>
